@@ -6,7 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { validateEmails, ValidationResult } from '@/lib/email-validator';
+import { ValidationResult } from '@/lib/email-validator';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import { 
@@ -113,11 +113,20 @@ export default function BulkValidation() {
 
       for (let i = 0; i < emails.length; i += batchSize) {
         const batch = emails.slice(i, i + batchSize);
-        const batchResults = validateEmails(batch);
+        
+        // Use edge function with real DNS lookups
+        const { data, error: fnError } = await supabase.functions.invoke('validate-email', {
+          body: { emails: batch }
+        });
+
+        if (fnError) {
+          console.error('Batch validation error:', fnError);
+          throw new Error(fnError.message);
+        }
+
+        const batchResults = data.results as ValidationResult[];
         allResults.push(...batchResults);
         setProgress(Math.min(((i + batchSize) / emails.length) * 100, 100));
-        // Small delay to show progress
-        await new Promise((r) => setTimeout(r, 100));
       }
 
       setResults(allResults);
