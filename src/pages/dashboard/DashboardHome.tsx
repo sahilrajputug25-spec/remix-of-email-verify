@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
+import { useCredentialAuth } from '@/hooks/useCredentialAuth';
 import { useSubscription } from '@/hooks/useSubscription';
 import SubscriptionBanner from '@/components/dashboard/SubscriptionBanner';
 import { 
@@ -32,7 +32,7 @@ interface Stats {
 }
 
 export default function DashboardHome() {
-  const { user } = useAuth();
+  const { user } = useCredentialAuth();
   const { isActive } = useSubscription();
   const [stats, setStats] = useState<Stats>({
     totalValidations: 0,
@@ -52,7 +52,7 @@ export default function DashboardHome() {
         const { data: validations, error } = await supabase
           .from('email_validations')
           .select('id, email, status, created_at')
-          .eq('user_id', user.id)
+          .eq('user_id', user.credentialKeyId)
           .order('created_at', { ascending: false });
 
         if (error) throw error;

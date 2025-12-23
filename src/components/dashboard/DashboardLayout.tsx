@@ -1,11 +1,11 @@
 import { Outlet, Navigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useCredentialAuth } from '@/hooks/useCredentialAuth';
 import { DashboardSidebar } from './DashboardSidebar';
 import { DashboardHeader } from './DashboardHeader';
 import { Loader2 } from 'lucide-react';
 
 export function DashboardLayout() {
-  const { user, loading } = useAuth();
+  const { isAuthenticated, loading } = useCredentialAuth();
 
   if (loading) {
     return (
@@ -15,7 +15,7 @@ export function DashboardLayout() {
     );
   }
 
-  if (!user) {
+  if (!isAuthenticated) {
     return <Navigate to="/auth" replace />;
   }
 

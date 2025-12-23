@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
+import { useCredentialAuth } from './useCredentialAuth';
 
 interface Subscription {
   id: string;
-  user_id: string;
+  user_id: string | null;
   credential_key_id: string | null;
   activated_at: string;
   expires_at: string;
@@ -18,18 +18,17 @@ interface UseSubscriptionReturn {
   isLoading: boolean;
   expiresAt: Date | null;
   timeRemaining: string;
-  activateSubscription: (keyCode: string) => Promise<{ success: boolean; error?: string }>;
   refreshSubscription: () => Promise<void>;
 }
 
 export function useSubscription(): UseSubscriptionReturn {
-  const { user } = useAuth();
+  const { user } = useCredentialAuth();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [timeRemaining, setTimeRemaining] = useState<string>('');
 
   const fetchSubscription = useCallback(async () => {
-    if (!user) {
+    if (!user?.credentialKeyId) {
       setSubscription(null);
       setIsLoading(false);
       return;
@@ -39,7 +38,7 @@ export function useSubscription(): UseSubscriptionReturn {
       const { data, error } = await supabase
         .from('subscriptions')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('credential_key_id', user.credentialKeyId)
         .eq('is_active', true)
         .gt('expires_at', new Date().toISOString())
         .order('created_at', { ascending: false })
@@ -58,36 +57,7 @@ export function useSubscription(): UseSubscriptionReturn {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
-
-  const activateSubscription = async (keyCode: string): Promise<{ success: boolean; error?: string }> => {
-    if (!user) {
-      return { success: false, error: 'User not authenticated' };
-    }
-
-    try {
-      const { data, error } = await supabase.rpc('activate_subscription', {
-        p_key_code: keyCode.trim()
-      });
-
-      if (error) {
-        console.error('Activation error:', error);
-        return { success: false, error: error.message };
-      }
-
-      const result = data as { success: boolean; error?: string; subscription_id?: string; expires_at?: string };
-      
-      if (result.success) {
-        await fetchSubscription();
-        return { success: true };
-      } else {
-        return { success: false, error: result.error || 'Activation failed' };
-      }
-    } catch (error) {
-      console.error('Activation error:', error);
-      return { success: false, error: 'Failed to activate subscription' };
-    }
-  };
+  }, [user?.credentialKeyId]);
 
   const calculateTimeRemaining = useCallback(() => {
     if (!subscription?.expires_at) {
@@ -101,7 +71,6 @@ export function useSubscription(): UseSubscriptionReturn {
 
     if (diff <= 0) {
       setTimeRemaining('Expired');
-      // Refresh subscription status
       fetchSubscription();
       return;
     }
@@ -145,7 +114,6 @@ export function useSubscription(): UseSubscriptionReturn {
     isLoading,
     expiresAt,
     timeRemaining,
-    activateSubscription,
     refreshSubscription: fetchSubscription,
   };
 }

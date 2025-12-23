@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
+import { useCredentialAuth } from '@/hooks/useCredentialAuth';
 import { useSubscription } from '@/hooks/useSubscription';
 import { ValidationResult } from '@/lib/email-validator';
 import SubscriptionBanner from '@/components/dashboard/SubscriptionBanner';
@@ -29,7 +29,7 @@ export default function SingleValidation() {
   const [email, setEmail] = useState('');
   const [isValidating, setIsValidating] = useState(false);
   const [result, setResult] = useState<ValidationResult | null>(null);
-  const { user } = useAuth();
+  const { user } = useCredentialAuth();
   const { isActive, isLoading: subLoading } = useSubscription();
   const { toast } = useToast();
 
@@ -64,7 +64,7 @@ export default function SingleValidation() {
       // Save to database
       if (user) {
         const { error } = await supabase.from('email_validations').insert({
-          user_id: user.id,
+          user_id: user.credentialKeyId,
           email: validationResult.email,
           syntax_valid: validationResult.syntaxValid,
           domain_exists: validationResult.domainExists,

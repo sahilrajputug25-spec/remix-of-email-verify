@@ -61,6 +61,7 @@ export type Database = {
           id: string
           is_used: boolean
           key_code: string
+          password_hash: string | null
           used_at: string | null
           used_by: string | null
         }
@@ -71,6 +72,7 @@ export type Database = {
           id?: string
           is_used?: boolean
           key_code: string
+          password_hash?: string | null
           used_at?: string | null
           used_by?: string | null
         }
@@ -81,6 +83,7 @@ export type Database = {
           id?: string
           is_used?: boolean
           key_code?: string
+          password_hash?: string | null
           used_at?: string | null
           used_by?: string | null
         }
@@ -193,13 +196,53 @@ export type Database = {
           },
         ]
       }
+      user_sessions: {
+        Row: {
+          created_at: string
+          credential_key_id: string
+          id: string
+          is_active: boolean
+          last_accessed_at: string
+          session_token: string
+        }
+        Insert: {
+          created_at?: string
+          credential_key_id: string
+          id?: string
+          is_active?: boolean
+          last_accessed_at?: string
+          session_token: string
+        }
+        Update: {
+          created_at?: string
+          credential_key_id?: string
+          id?: string
+          is_active?: boolean
+          last_accessed_at?: string
+          session_token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_sessions_credential_key_id_fkey"
+            columns: ["credential_key_id"]
+            isOneToOne: false
+            referencedRelation: "credential_keys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
       activate_subscription: { Args: { p_key_code: string }; Returns: Json }
+      credential_login: {
+        Args: { p_key_code: string; p_password: string }
+        Returns: Json
+      }
       has_active_subscription: { Args: { p_user_id: string }; Returns: boolean }
+      validate_session: { Args: { p_session_token: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never
