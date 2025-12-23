@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { LandingNavbar } from '@/components/layout/LandingNavbar';
 import { Footer } from '@/components/layout/Footer';
-import { useAuth } from '@/hooks/useAuth';
+import { useCredentialAuth } from '@/hooks/useCredentialAuth';
 import { useEffect } from 'react';
 import { 
   Mail, 
@@ -18,14 +18,14 @@ import {
 } from 'lucide-react';
 
 export default function Landing() {
-  const { user } = useAuth();
+  const { isAuthenticated } = useCredentialAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) {
+    if (isAuthenticated) {
       navigate('/dashboard');
     }
-  }, [user, navigate]);
+  }, [isAuthenticated, navigate]);
 
   return (
     <div className="min-h-screen bg-background">
