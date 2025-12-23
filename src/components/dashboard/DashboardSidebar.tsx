@@ -7,11 +7,12 @@ import {
   User, 
   LogOut,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
+import { useCredentialAuth } from '@/hooks/useCredentialAuth';
 import { useState } from 'react';
 
 const navItems = [
@@ -20,11 +21,12 @@ const navItems = [
   { path: '/dashboard/bulk', label: 'Bulk Validation', icon: FileUp },
   { path: '/dashboard/history', label: 'Recent Validations', icon: History },
   { path: '/dashboard/profile', label: 'Profile', icon: User },
+  { path: '/dashboard/admin', label: 'Admin Panel', icon: Shield },
 ];
 
 export function DashboardSidebar() {
   const [collapsed, setCollapsed] = useState(false);
-  const { signOut } = useAuth();
+  const { logout } = useCredentialAuth();
   const location = useLocation();
 
   return (
@@ -81,7 +83,7 @@ export function DashboardSidebar() {
       {/* Footer */}
       <div className="p-3 border-t border-sidebar-border">
         <button
-          onClick={signOut}
+          onClick={logout}
           className={cn(
             "flex items-center gap-3 px-3 py-2.5 rounded-lg w-full transition-all duration-200",
             "text-sidebar-foreground/70 hover:bg-destructive/20 hover:text-destructive"

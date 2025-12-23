@@ -30,11 +30,8 @@ export function LandingNavbar() {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" asChild>
-              <Link to="/auth">Login</Link>
-            </Button>
             <Button variant="hero" asChild>
-              <Link to="/auth?mode=signup">Get Started</Link>
+              <Link to="/auth">Login</Link>
             </Button>
           </div>
 
@@ -70,11 +67,8 @@ export function LandingNavbar() {
                 How it Works
               </Link>
               <div className="flex flex-col gap-2 pt-2 border-t border-border">
-                <Button variant="outline" asChild className="w-full">
-                  <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>Login</Link>
-                </Button>
                 <Button variant="hero" asChild className="w-full">
-                  <Link to="/auth?mode=signup" onClick={() => setMobileMenuOpen(false)}>Get Started</Link>
+                  <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>Login</Link>
                 </Button>
               </div>
             </div>
