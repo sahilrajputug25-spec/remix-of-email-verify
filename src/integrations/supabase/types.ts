@@ -53,6 +53,39 @@ export type Database = {
         }
         Relationships: []
       }
+      credential_keys: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          is_used: boolean
+          key_code: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_used?: boolean
+          key_code: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_used?: boolean
+          key_code?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: []
+      }
       email_validations: {
         Row: {
           created_at: string
@@ -122,12 +155,51 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          activated_at: string
+          created_at: string
+          credential_key_id: string | null
+          expires_at: string
+          id: string
+          is_active: boolean
+          user_id: string
+        }
+        Insert: {
+          activated_at?: string
+          created_at?: string
+          credential_key_id?: string | null
+          expires_at: string
+          id?: string
+          is_active?: boolean
+          user_id: string
+        }
+        Update: {
+          activated_at?: string
+          created_at?: string
+          credential_key_id?: string | null
+          expires_at?: string
+          id?: string
+          is_active?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_credential_key_id_fkey"
+            columns: ["credential_key_id"]
+            isOneToOne: false
+            referencedRelation: "credential_keys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      activate_subscription: { Args: { p_key_code: string }; Returns: Json }
+      has_active_subscription: { Args: { p_user_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

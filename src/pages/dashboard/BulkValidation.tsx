@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -6,7 +7,9 @@ import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useSubscription } from '@/hooks/useSubscription';
 import { ValidationResult } from '@/lib/email-validator';
+import SubscriptionBanner from '@/components/dashboard/SubscriptionBanner';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import { 
@@ -18,7 +21,9 @@ import {
   AlertTriangle,
   Loader2,
   File,
-  Trash2
+  Trash2,
+  Lock,
+  ArrowLeft
 } from 'lucide-react';
 
 export default function BulkValidation() {
@@ -29,6 +34,7 @@ export default function BulkValidation() {
   const [progress, setProgress] = useState(0);
   const [filter, setFilter] = useState<'all' | 'valid' | 'invalid' | 'risky'>('all');
   const { user } = useAuth();
+  const { isActive, isLoading: subLoading } = useSubscription();
   const { toast } = useToast();
 
   const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -223,6 +229,34 @@ export default function BulkValidation() {
   const validCount = results.filter((r) => r.status === 'valid').length;
   const invalidCount = results.filter((r) => r.status === 'invalid').length;
   const riskyCount = results.filter((r) => r.status === 'risky').length;
+
+  // Show subscription required message if not active
+  if (!subLoading && !isActive) {
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <SubscriptionBanner />
+        
+        <Card className="shadow-elevated">
+          <CardContent className="py-12 text-center">
+            <div className="w-16 h-16 rounded-full bg-warning/10 flex items-center justify-center mx-auto mb-4">
+              <Lock className="w-8 h-8 text-warning" />
+            </div>
+            <h2 className="text-2xl font-bold text-foreground mb-2">Subscription Required</h2>
+            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+              You need an active subscription to bulk validate emails. 
+              Activate your subscription using a credential key to unlock this feature.
+            </p>
+            <Button variant="outline" asChild>
+              <Link to="/dashboard">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Dashboard
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">

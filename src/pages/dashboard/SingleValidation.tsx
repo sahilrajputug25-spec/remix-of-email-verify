@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,7 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useSubscription } from '@/hooks/useSubscription';
 import { ValidationResult } from '@/lib/email-validator';
+import SubscriptionBanner from '@/components/dashboard/SubscriptionBanner';
 import { 
   Mail, 
   Search, 
@@ -17,7 +20,9 @@ import {
   Database,
   Shield,
   Users,
-  Loader2
+  Loader2,
+  Lock,
+  ArrowLeft
 } from 'lucide-react';
 
 export default function SingleValidation() {
@@ -25,6 +30,7 @@ export default function SingleValidation() {
   const [isValidating, setIsValidating] = useState(false);
   const [result, setResult] = useState<ValidationResult | null>(null);
   const { user } = useAuth();
+  const { isActive, isLoading: subLoading } = useSubscription();
   const { toast } = useToast();
 
   const handleValidate = async (e: React.FormEvent) => {
@@ -117,6 +123,34 @@ export default function SingleValidation() {
         return null;
     }
   };
+
+  // Show subscription required message if not active
+  if (!subLoading && !isActive) {
+    return (
+      <div className="max-w-3xl mx-auto space-y-6 animate-fade-in">
+        <SubscriptionBanner />
+        
+        <Card className="shadow-elevated">
+          <CardContent className="py-12 text-center">
+            <div className="w-16 h-16 rounded-full bg-warning/10 flex items-center justify-center mx-auto mb-4">
+              <Lock className="w-8 h-8 text-warning" />
+            </div>
+            <h2 className="text-2xl font-bold text-foreground mb-2">Subscription Required</h2>
+            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+              You need an active subscription to validate emails. 
+              Activate your subscription using a credential key to unlock this feature.
+            </p>
+            <Button variant="outline" asChild>
+              <Link to="/dashboard">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Dashboard
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 animate-fade-in">

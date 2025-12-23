@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useSubscription } from '@/hooks/useSubscription';
+import SubscriptionBanner from '@/components/dashboard/SubscriptionBanner';
 import { 
   Mail, 
   FileUp, 
@@ -12,7 +14,8 @@ import {
   XCircle, 
   AlertTriangle,
   ArrowRight,
-  TrendingUp
+  TrendingUp,
+  Lock
 } from 'lucide-react';
 
 interface Stats {
@@ -30,6 +33,7 @@ interface Stats {
 
 export default function DashboardHome() {
   const { user } = useAuth();
+  const { isActive } = useSubscription();
   const [stats, setStats] = useState<Stats>({
     totalValidations: 0,
     validCount: 0,
@@ -89,6 +93,9 @@ export default function DashboardHome() {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Subscription Banner */}
+      <SubscriptionBanner />
+
       {/* Welcome Header */}
       <div>
         <h1 className="text-3xl font-bold text-foreground">Welcome back!</h1>
@@ -130,40 +137,48 @@ export default function DashboardHome() {
 
       {/* Quick Actions */}
       <div className="grid md:grid-cols-2 gap-6">
-        <Card className="shadow-elevated hover:shadow-glow transition-all duration-300">
+        <Card className={`shadow-elevated hover:shadow-glow transition-all duration-300 ${!isActive ? 'opacity-75' : ''}`}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Mail className="w-5 h-5 text-primary" />
               Single Email Validation
+              {!isActive && <Lock className="w-4 h-4 text-muted-foreground" />}
             </CardTitle>
             <CardDescription>
-              Quickly validate a single email address with detailed results.
+              {isActive 
+                ? 'Quickly validate a single email address with detailed results.'
+                : 'Activate subscription to validate emails.'
+              }
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button asChild>
-              <Link to="/dashboard/validate">
-                Validate Email
+            <Button asChild disabled={!isActive}>
+              <Link to={isActive ? "/dashboard/validate" : "#"}>
+                {isActive ? 'Validate Email' : 'Subscription Required'}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
             </Button>
           </CardContent>
         </Card>
 
-        <Card className="shadow-elevated hover:shadow-glow transition-all duration-300">
+        <Card className={`shadow-elevated hover:shadow-glow transition-all duration-300 ${!isActive ? 'opacity-75' : ''}`}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileUp className="w-5 h-5 text-primary" />
               Bulk Email Validation
+              {!isActive && <Lock className="w-4 h-4 text-muted-foreground" />}
             </CardTitle>
             <CardDescription>
-              Upload a CSV or Excel file to validate up to 1000 emails at once.
+              {isActive 
+                ? 'Upload a CSV or Excel file to validate up to 1000 emails at once.'
+                : 'Activate subscription to bulk validate emails.'
+              }
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button asChild>
-              <Link to="/dashboard/bulk">
-                Upload File
+            <Button asChild disabled={!isActive}>
+              <Link to={isActive ? "/dashboard/bulk" : "#"}>
+                {isActive ? 'Upload File' : 'Subscription Required'}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
             </Button>

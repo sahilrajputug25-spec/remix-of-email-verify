@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Mail, Loader2, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { Mail, Loader2, ArrowLeft, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 import { z } from 'zod';
 
 const authSchema = z.object({
@@ -23,21 +23,29 @@ export default function Auth() {
   const [fullName, setFullName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showVerificationMessage, setShowVerificationMessage] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; fullName?: string }>({});
   
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, signUp, user, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    if (user) {
+    if (!loading && user) {
       navigate('/dashboard');
     }
-  }, [user, navigate]);
+  }, [user, loading, navigate]);
 
   useEffect(() => {
     setIsSignUp(searchParams.get('mode') === 'signup');
-  }, [searchParams]);
+    // Check if user just confirmed their email
+    if (searchParams.get('confirmed') === 'true') {
+      toast({
+        title: 'Email verified!',
+        description: 'Your email has been verified. You can now log in.',
+      });
+    }
+  }, [searchParams, toast]);
 
   const validateForm = () => {
     try {
@@ -73,7 +81,7 @@ export default function Auth() {
       if (isSignUp) {
         const { error } = await signUp(email, password, fullName);
         if (error) {
-          if (error.message.includes('already registered')) {
+          if (error.message.includes('already registered') || error.message.includes('User already registered')) {
             toast({
               title: 'Account exists',
               description: 'This email is already registered. Please log in instead.',
@@ -88,18 +96,35 @@ export default function Auth() {
           }
           return;
         }
+        // Show verification message instead of redirecting
+        setShowVerificationMessage(true);
         toast({
-          title: 'Account created!',
-          description: 'Welcome to EmailVerify. Redirecting to dashboard...',
+          title: 'Check your email',
+          description: 'We sent you a verification link. Please check your inbox.',
         });
       } else {
         const { error } = await signIn(email, password);
         if (error) {
-          toast({
-            title: 'Login failed',
-            description: 'Invalid email or password. Please try again.',
-            variant: 'destructive',
-          });
+          // Handle specific error cases
+          if (error.message.includes('Email not confirmed')) {
+            toast({
+              title: 'Email not verified',
+              description: 'Please check your inbox and click the verification link.',
+              variant: 'destructive',
+            });
+          } else if (error.message.includes('Invalid login credentials')) {
+            toast({
+              title: 'Login failed',
+              description: 'Invalid email or password. Please try again.',
+              variant: 'destructive',
+            });
+          } else {
+            toast({
+              title: 'Login failed',
+              description: error.message,
+              variant: 'destructive',
+            });
+          }
           return;
         }
         toast({
@@ -117,6 +142,54 @@ export default function Auth() {
       setIsLoading(false);
     }
   };
+
+  // Show email verification success message
+  if (showVerificationMessage) {
+    return (
+      <div className="min-h-screen bg-gradient-hero flex flex-col">
+        <div className="p-4">
+          <Link 
+            to="/" 
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to home
+          </Link>
+        </div>
+
+        <div className="flex-1 flex items-center justify-center px-4 py-8">
+          <Card className="w-full max-w-md shadow-elevated animate-scale-in text-center">
+            <CardHeader className="pb-4">
+              <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="w-8 h-8 text-success" />
+              </div>
+              <CardTitle className="text-2xl font-bold">Check your email</CardTitle>
+              <CardDescription className="text-base">
+                We've sent a verification link to
+              </CardDescription>
+              <p className="font-semibold text-foreground mt-2">{email}</p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground">
+                Click the link in the email to verify your account. 
+                After verification, you can log in to access your dashboard.
+              </p>
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => {
+                  setShowVerificationMessage(false);
+                  setIsSignUp(false);
+                }}
+              >
+                Back to Login
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-hero flex flex-col">
