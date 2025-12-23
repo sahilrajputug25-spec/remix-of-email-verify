@@ -196,6 +196,35 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          credential_key_id: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Insert: {
+          created_at?: string
+          credential_key_id: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Update: {
+          created_at?: string
+          credential_key_id?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_credential_key_id_fkey"
+            columns: ["credential_key_id"]
+            isOneToOne: false
+            referencedRelation: "credential_keys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_sessions: {
         Row: {
           created_at: string
@@ -237,15 +266,40 @@ export type Database = {
     }
     Functions: {
       activate_subscription: { Args: { p_key_code: string }; Returns: Json }
+      create_credential_key: {
+        Args: {
+          p_created_by?: string
+          p_key_code: string
+          p_password: string
+          p_session_token: string
+        }
+        Returns: Json
+      }
       credential_login: {
         Args: { p_key_code: string; p_password: string }
         Returns: Json
       }
+      delete_credential_key: {
+        Args: { p_key_id: string; p_session_token: string }
+        Returns: Json
+      }
+      get_all_credential_keys: {
+        Args: { p_session_token: string }
+        Returns: Json
+      }
       has_active_subscription: { Args: { p_user_id: string }; Returns: boolean }
+      has_role: {
+        Args: {
+          p_credential_key_id: string
+          p_role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
+      is_admin: { Args: { p_session_token: string }; Returns: boolean }
       validate_session: { Args: { p_session_token: string }; Returns: Json }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -372,6 +426,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const

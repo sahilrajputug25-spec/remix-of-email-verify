@@ -12,6 +12,7 @@ import SingleValidation from "./pages/dashboard/SingleValidation";
 import BulkValidation from "./pages/dashboard/BulkValidation";
 import RecentValidations from "./pages/dashboard/RecentValidations";
 import ProfilePage from "./pages/dashboard/Profile";
+import AdminPanel from "./pages/dashboard/AdminPanel";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
               <Route path="bulk" element={<BulkValidation />} />
               <Route path="history" element={<RecentValidations />} />
               <Route path="profile" element={<ProfilePage />} />
+              <Route path="admin" element={<AdminPanel />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

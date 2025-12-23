@@ -58,14 +58,9 @@ export default function Landing() {
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up" style={{ animationDelay: '0.2s' }}>
               <Button variant="hero" size="xl" asChild>
-                <Link to="/auth?mode=signup">
-                  Start Validating Free
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Link>
-              </Button>
-              <Button variant="hero-outline" size="xl" asChild>
                 <Link to="/auth">
-                  Login to Dashboard
+                  Access Dashboard
+                  <ArrowRight className="w-5 h-5 ml-2" />
                 </Link>
               </Button>
             </div>
@@ -152,8 +147,8 @@ export default function Landing() {
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             <StepCard
               step={1}
-              title="Create Account"
-              description="Sign up for free and access your personal dashboard."
+              title="Get Your Credentials"
+              description="Receive your unique credential key and password from the administrator."
             />
             <StepCard
               step={2}
@@ -183,8 +178,8 @@ export default function Landing() {
             className="bg-background text-foreground hover:bg-background/90"
             asChild
           >
-            <Link to="/auth?mode=signup">
-              Get Started Free
+            <Link to="/auth">
+              Login Now
               <ArrowRight className="w-5 h-5 ml-2" />
             </Link>
           </Button>
