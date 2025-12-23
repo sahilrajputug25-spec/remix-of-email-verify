@@ -1,14 +1,10 @@
-import { useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useSubscription } from '@/hooks/useSubscription';
-import { Clock, Key, AlertTriangle, CheckCircle2 } from 'lucide-react';
-import ActivateSubscriptionDialog from './ActivateSubscriptionDialog';
+import { Clock, AlertTriangle, CheckCircle2 } from 'lucide-react';
 
 export default function SubscriptionBanner() {
   const { isActive, isLoading, timeRemaining, expiresAt } = useSubscription();
-  const [showActivateDialog, setShowActivateDialog] = useState(false);
 
   if (isLoading) {
     return null;
@@ -47,34 +43,23 @@ export default function SubscriptionBanner() {
   }
 
   return (
-    <>
-      <Card className="p-4 bg-warning/5 border-warning/20">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-warning/10 flex items-center justify-center">
-              <AlertTriangle className="w-5 h-5 text-warning" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-foreground">No Active Subscription</span>
-                <Badge variant="warning" className="text-xs">Inactive</Badge>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                You can view past validations, but email validation is disabled.
-              </p>
-            </div>
+    <Card className="p-4 bg-warning/5 border-warning/20">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-warning/10 flex items-center justify-center">
+            <AlertTriangle className="w-5 h-5 text-warning" />
           </div>
-          <Button onClick={() => setShowActivateDialog(true)}>
-            <Key className="w-4 h-4 mr-2" />
-            Activate Subscription
-          </Button>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-foreground">Subscription Expired</span>
+              <Badge variant="warning" className="text-xs">Inactive</Badge>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Your subscription has expired. Contact your administrator for a new credential key.
+            </p>
+          </div>
         </div>
-      </Card>
-
-      <ActivateSubscriptionDialog 
-        open={showActivateDialog} 
-        onOpenChange={setShowActivateDialog} 
-      />
-    </>
+      </div>
+    </Card>
   );
 }
