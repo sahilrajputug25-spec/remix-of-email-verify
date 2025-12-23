@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { validateEmail, ValidationResult } from '@/lib/email-validator';
+import { ValidationResult } from '@/lib/email-validator';
 import { 
   Mail, 
   Search, 
@@ -43,8 +43,16 @@ export default function SingleValidation() {
     setResult(null);
 
     try {
-      // Perform validation
-      const validationResult = validateEmail(email);
+      // Perform validation via edge function with real DNS lookups
+      const { data, error: fnError } = await supabase.functions.invoke('validate-email', {
+        body: { email }
+      });
+
+      if (fnError) {
+        throw new Error(fnError.message);
+      }
+
+      const validationResult = data as ValidationResult;
       setResult(validationResult);
 
       // Save to database
