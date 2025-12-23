@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
+import { useCredentialAuth } from '@/hooks/useCredentialAuth';
 import { useSubscription } from '@/hooks/useSubscription';
 import { ValidationResult } from '@/lib/email-validator';
 import SubscriptionBanner from '@/components/dashboard/SubscriptionBanner';
@@ -33,7 +33,7 @@ export default function BulkValidation() {
   const [isValidating, setIsValidating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [filter, setFilter] = useState<'all' | 'valid' | 'invalid' | 'risky'>('all');
-  const { user } = useAuth();
+  const { user } = useCredentialAuth();
   const { isActive, isLoading: subLoading } = useSubscription();
   const { toast } = useToast();
 
@@ -140,7 +140,7 @@ export default function BulkValidation() {
       // Save to database
       if (user) {
         const validations = allResults.map((result) => ({
-          user_id: user.id,
+          user_id: user.credentialKeyId,
           email: result.email,
           syntax_valid: result.syntaxValid,
           domain_exists: result.domainExists,
@@ -164,7 +164,7 @@ export default function BulkValidation() {
         const riskyCount = allResults.filter((r) => r.status === 'risky').length;
 
         await supabase.from('bulk_uploads').insert({
-          user_id: user.id,
+          user_id: user.credentialKeyId,
           file_name: file?.name || 'bulk_upload',
           total_emails: allResults.length,
           valid_count: validCount,
