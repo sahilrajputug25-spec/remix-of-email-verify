@@ -17,6 +17,7 @@ export type Database = {
       bulk_uploads: {
         Row: {
           completed_at: string | null
+          country: string | null
           created_at: string
           file_name: string
           id: string
@@ -29,6 +30,7 @@ export type Database = {
         }
         Insert: {
           completed_at?: string | null
+          country?: string | null
           created_at?: string
           file_name: string
           id?: string
@@ -41,6 +43,7 @@ export type Database = {
         }
         Update: {
           completed_at?: string | null
+          country?: string | null
           created_at?: string
           file_name?: string
           id?: string
@@ -91,6 +94,7 @@ export type Database = {
       }
       email_validations: {
         Row: {
+          country: string | null
           created_at: string
           domain: string | null
           domain_exists: boolean | null
@@ -105,6 +109,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          country?: string | null
           created_at?: string
           domain?: string | null
           domain_exists?: boolean | null
@@ -119,6 +124,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          country?: string | null
           created_at?: string
           domain?: string | null
           domain_exists?: boolean | null

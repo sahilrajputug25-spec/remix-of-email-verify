@@ -23,8 +23,29 @@ import {
   File,
   Trash2,
   Lock,
-  ArrowLeft
+  ArrowLeft,
+  Globe
 } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+const COUNTRIES = [
+  { code: 'US', name: 'United States' },
+  { code: 'UK', name: 'United Kingdom' },
+  { code: 'IN', name: 'India' },
+  { code: 'CA', name: 'Canada' },
+  { code: 'AU', name: 'Australia' },
+  { code: 'DE', name: 'Germany' },
+  { code: 'FR', name: 'France' },
+  { code: 'SG', name: 'Singapore' },
+  { code: 'AE', name: 'UAE' },
+  { code: 'OTHER', name: 'Other' },
+];
 
 export default function BulkValidation() {
   const [file, setFile] = useState<File | null>(null);
@@ -33,6 +54,7 @@ export default function BulkValidation() {
   const [isValidating, setIsValidating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [filter, setFilter] = useState<'all' | 'valid' | 'invalid' | 'risky'>('all');
+  const [selectedCountry, setSelectedCountry] = useState<string>('US');
   const { user } = useCredentialAuth();
   const { isActive, isLoading: subLoading } = useSubscription();
   const { toast } = useToast();
@@ -150,6 +172,7 @@ export default function BulkValidation() {
           is_catch_all: result.isCatchAll,
           domain: result.domain,
           status: result.status,
+          country: selectedCountry,
         }));
 
         // Insert in batches
@@ -172,6 +195,7 @@ export default function BulkValidation() {
           risky_count: riskyCount,
           status: 'completed',
           completed_at: new Date().toISOString(),
+          country: selectedCountry,
         });
       }
 
@@ -268,6 +292,33 @@ export default function BulkValidation() {
         </p>
       </div>
 
+      {/* Country Selection */}
+      <Card className="shadow-elevated">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Globe className="w-5 h-5 text-primary" />
+            Select Country
+          </CardTitle>
+          <CardDescription>
+            Choose the country for this batch of emails
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+            <SelectTrigger className="w-full max-w-xs">
+              <SelectValue placeholder="Select a country" />
+            </SelectTrigger>
+            <SelectContent>
+              {COUNTRIES.map((country) => (
+                <SelectItem key={country.code} value={country.code}>
+                  {country.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </CardContent>
+      </Card>
+
       {/* Upload Area */}
       <Card className="shadow-elevated">
         <CardHeader>
@@ -304,7 +355,7 @@ export default function BulkValidation() {
                   <div>
                     <p className="font-medium text-foreground">{file.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      {emails.length} emails found
+                      {emails.length} emails found • {COUNTRIES.find(c => c.code === selectedCountry)?.name}
                     </p>
                   </div>
                 </div>
