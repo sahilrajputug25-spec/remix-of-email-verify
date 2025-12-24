@@ -11,7 +11,7 @@ import {
   SelectValue 
 } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
+import { useCredentialAuth } from '@/hooks/useCredentialAuth';
 import { 
   Search, 
   CheckCircle2, 
@@ -43,7 +43,7 @@ export default function RecentValidations() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const itemsPerPage = 20;
-  const { user } = useAuth();
+  const { user } = useCredentialAuth();
 
   useEffect(() => {
     fetchValidations();
@@ -57,7 +57,7 @@ export default function RecentValidations() {
       let query = supabase
         .from('email_validations')
         .select('*', { count: 'exact' })
-        .eq('user_id', user.id)
+        .eq('user_id', user.credentialKeyId)
         .order('created_at', { ascending: false });
 
       if (statusFilter !== 'all') {
