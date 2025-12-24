@@ -166,7 +166,7 @@ export type Database = {
           expires_at: string
           id: string
           is_active: boolean
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           activated_at?: string
@@ -175,7 +175,7 @@ export type Database = {
           expires_at: string
           id?: string
           is_active?: boolean
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           activated_at?: string
@@ -184,7 +184,7 @@ export type Database = {
           expires_at?: string
           id?: string
           is_active?: boolean
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {
