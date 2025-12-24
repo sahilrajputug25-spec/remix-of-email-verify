@@ -13,21 +13,29 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useCredentialAuth } from '@/hooks/useCredentialAuth';
-import { useState } from 'react';
-
-const navItems = [
-  { path: '/dashboard', label: 'Home', icon: Home },
-  { path: '/dashboard/validate', label: 'Single Validation', icon: Mail },
-  { path: '/dashboard/bulk', label: 'Bulk Validation', icon: FileUp },
-  { path: '/dashboard/history', label: 'Recent Validations', icon: History },
-  { path: '/dashboard/profile', label: 'Profile', icon: User },
-  { path: '/dashboard/admin', label: 'Admin Panel', icon: Shield },
-];
+import { useState, useMemo } from 'react';
 
 export function DashboardSidebar() {
   const [collapsed, setCollapsed] = useState(false);
-  const { logout } = useCredentialAuth();
+  const { logout, user } = useCredentialAuth();
   const location = useLocation();
+
+  const navItems = useMemo(() => {
+    const items = [
+      { path: '/dashboard', label: 'Home', icon: Home },
+      { path: '/dashboard/validate', label: 'Single Validation', icon: Mail },
+      { path: '/dashboard/bulk', label: 'Bulk Validation', icon: FileUp },
+      { path: '/dashboard/history', label: 'Recent Validations', icon: History },
+      { path: '/dashboard/profile', label: 'Profile', icon: User },
+    ];
+    
+    // Only show Admin Panel for admin users
+    if (user?.isAdmin) {
+      items.push({ path: '/dashboard/admin', label: 'Admin Panel', icon: Shield });
+    }
+    
+    return items;
+  }, [user?.isAdmin]);
 
   return (
     <aside 

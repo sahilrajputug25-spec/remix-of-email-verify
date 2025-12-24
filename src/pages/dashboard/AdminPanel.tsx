@@ -43,12 +43,18 @@ export default function AdminPanel() {
   };
 
   useEffect(() => {
+    // First check if user is admin from the client side
+    if (user && !user.isAdmin) {
+      setIsAuthorized(false);
+      return;
+    }
+    
     const checkAccess = async () => {
       const result = await fetchCredentialKeys();
       setIsAuthorized(result.success);
     };
     checkAccess();
-  }, [fetchCredentialKeys]);
+  }, [fetchCredentialKeys, user]);
 
   const handleCreateKey = async () => {
     if (!newKeyCode.trim() || !newPassword.trim()) {
