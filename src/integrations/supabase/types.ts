@@ -296,6 +296,21 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { p_session_token: string }; Returns: boolean }
+      save_email_validation: {
+        Args: {
+          p_credential_key_id: string
+          p_domain: string
+          p_domain_exists: boolean
+          p_email: string
+          p_is_catch_all: boolean
+          p_is_disposable: boolean
+          p_is_role_based: boolean
+          p_mx_records: boolean
+          p_status: string
+          p_syntax_valid: boolean
+        }
+        Returns: string
+      }
       validate_session: { Args: { p_session_token: string }; Returns: Json }
     }
     Enums: {

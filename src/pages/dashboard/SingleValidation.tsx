@@ -61,19 +61,19 @@ export default function SingleValidation() {
       const validationResult = data as ValidationResult;
       setResult(validationResult);
 
-      // Save to database
+      // Save to database using RPC function
       if (user) {
-        const { error } = await supabase.from('email_validations').insert({
-          user_id: user.credentialKeyId,
-          email: validationResult.email,
-          syntax_valid: validationResult.syntaxValid,
-          domain_exists: validationResult.domainExists,
-          mx_records: validationResult.mxRecords,
-          is_disposable: validationResult.isDisposable,
-          is_role_based: validationResult.isRoleBased,
-          is_catch_all: validationResult.isCatchAll,
-          domain: validationResult.domain,
-          status: validationResult.status,
+        const { error } = await supabase.rpc('save_email_validation', {
+          p_credential_key_id: user.credentialKeyId,
+          p_email: validationResult.email,
+          p_syntax_valid: validationResult.syntaxValid,
+          p_domain_exists: validationResult.domainExists,
+          p_mx_records: validationResult.mxRecords,
+          p_is_disposable: validationResult.isDisposable,
+          p_is_role_based: validationResult.isRoleBased,
+          p_is_catch_all: validationResult.isCatchAll,
+          p_domain: validationResult.domain,
+          p_status: validationResult.status,
         });
 
         if (error) {
