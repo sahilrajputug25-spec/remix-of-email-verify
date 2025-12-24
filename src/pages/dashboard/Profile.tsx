@@ -1,16 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
 import { useCredentialAuth } from '@/hooks/useCredentialAuth';
-import { User, Mail, Loader2, Save, Key, Shield } from 'lucide-react';
+import { User, Key, Shield } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 export default function ProfilePage() {
-  const { user, loading } = useCredentialAuth();
-  const { toast } = useToast();
+  const { user, loading, refreshSession } = useCredentialAuth();
+
+  // Refresh session on mount to get latest subscription status
+  useEffect(() => {
+    refreshSession();
+  }, [refreshSession]);
 
   if (loading) {
     return (
