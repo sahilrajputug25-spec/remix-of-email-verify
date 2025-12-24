@@ -5,6 +5,7 @@ interface CredentialUser {
   credentialKeyId: string;
   keyCode: string;
   createdBy: string | null;
+  isAdmin: boolean;
   subscriptionActive: boolean;
   subscriptionExpiresAt: string | null;
 }
@@ -43,6 +44,7 @@ export function CredentialAuthProvider({ children }: { children: ReactNode }) {
         credential_key_id?: string;
         key_code?: string;
         created_by?: string;
+        is_admin?: boolean;
         subscription_active?: boolean;
         subscription_expires_at?: string;
         error?: string;
@@ -56,6 +58,7 @@ export function CredentialAuthProvider({ children }: { children: ReactNode }) {
         credentialKeyId: result.credential_key_id!,
         keyCode: result.key_code!,
         createdBy: result.created_by || null,
+        isAdmin: result.is_admin || false,
         subscriptionActive: result.subscription_active || false,
         subscriptionExpiresAt: result.subscription_expires_at || null,
       };

@@ -27,8 +27,18 @@ export function useSubscription(): UseSubscriptionReturn {
   const [isLoading, setIsLoading] = useState(true);
   const [timeRemaining, setTimeRemaining] = useState<string>('');
 
+  // If user is admin, subscription is always active
+  const isAdmin = user?.isAdmin || false;
+
   const fetchSubscription = useCallback(async () => {
     if (!user?.credentialKeyId) {
+      setSubscription(null);
+      setIsLoading(false);
+      return;
+    }
+
+    // For admins, we don't need to fetch subscription - it's always active
+    if (user.isAdmin) {
       setSubscription(null);
       setIsLoading(false);
       return;
@@ -57,7 +67,7 @@ export function useSubscription(): UseSubscriptionReturn {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.credentialKeyId]);
+  }, [user?.credentialKeyId, user?.isAdmin]);
 
   const calculateTimeRemaining = useCallback(() => {
     if (!subscription?.expires_at) {
@@ -100,20 +110,21 @@ export function useSubscription(): UseSubscriptionReturn {
     return () => clearInterval(interval);
   }, [subscription, calculateTimeRemaining]);
 
-  const isActive = Boolean(
+  // Admins always have active subscription
+  const isActive = isAdmin || Boolean(
     subscription && 
     subscription.is_active && 
     new Date(subscription.expires_at) > new Date()
   );
 
-  const expiresAt = subscription?.expires_at ? new Date(subscription.expires_at) : null;
+  const expiresAt = isAdmin ? null : (subscription?.expires_at ? new Date(subscription.expires_at) : null);
 
   return {
     subscription,
     isActive,
     isLoading,
     expiresAt,
-    timeRemaining,
+    timeRemaining: isAdmin ? 'Unlimited' : timeRemaining,
     refreshSubscription: fetchSubscription,
   };
 }

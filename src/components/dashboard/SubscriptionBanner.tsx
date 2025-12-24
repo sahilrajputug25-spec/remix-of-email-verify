@@ -1,13 +1,39 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useSubscription } from '@/hooks/useSubscription';
-import { Clock, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { useCredentialAuth } from '@/hooks/useCredentialAuth';
+import { Clock, AlertTriangle, CheckCircle2, Shield } from 'lucide-react';
 
 export default function SubscriptionBanner() {
   const { isActive, isLoading, timeRemaining, expiresAt } = useSubscription();
+  const { user } = useCredentialAuth();
 
   if (isLoading) {
     return null;
+  }
+
+  // Admin banner
+  if (user?.isAdmin) {
+    return (
+      <Card className="p-4 bg-primary/5 border-primary/20">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Shield className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-foreground">Admin Account</span>
+                <Badge variant="default" className="text-xs">Admin</Badge>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Unlimited access to all features
+              </p>
+            </div>
+          </div>
+        </div>
+      </Card>
+    );
   }
 
   if (isActive) {
