@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 interface CredentialKey {
   id: string;
   key_code: string;
+  password: string | null;
   is_used: boolean;
   created_by: string | null;
   created_at: string;

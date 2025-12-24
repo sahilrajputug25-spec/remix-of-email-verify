@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Plus, Trash2, Key, Shield, Loader2, Copy, CheckCircle2, XCircle } from 'lucide-react';
+import { Plus, Trash2, Key, Shield, Loader2, Copy, CheckCircle2, XCircle, Eye, EyeOff } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface CreatedCredential {
@@ -28,6 +28,19 @@ export default function AdminPanel() {
   const [createdBy, setCreatedBy] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+  const [visiblePasswords, setVisiblePasswords] = useState<Set<string>>(new Set());
+
+  const togglePasswordVisibility = (keyId: string) => {
+    setVisiblePasswords(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(keyId)) {
+        newSet.delete(keyId);
+      } else {
+        newSet.add(keyId);
+      }
+      return newSet;
+    });
+  };
 
   useEffect(() => {
     const checkAccess = async () => {
@@ -305,6 +318,7 @@ export default function AdminPanel() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Key Code</TableHead>
+                  <TableHead>Password</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Created By</TableHead>
                   <TableHead>Created At</TableHead>
@@ -329,6 +343,37 @@ export default function AdminPanel() {
                           <Copy className="w-3 h-3" />
                         </Button>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      {key.password && !key.is_used ? (
+                        <div className="flex items-center gap-2">
+                          <code className="bg-muted px-2 py-1 rounded text-sm font-mono">
+                            {visiblePasswords.has(key.id) ? key.password : '••••••••'}
+                          </code>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => togglePasswordVisibility(key.id)}
+                            className="h-7 w-7 p-0"
+                          >
+                            {visiblePasswords.has(key.id) ? (
+                              <EyeOff className="w-3 h-3" />
+                            ) : (
+                              <Eye className="w-3 h-3" />
+                            )}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => copyToClipboard(key.password!)}
+                            className="h-7 w-7 p-0"
+                          >
+                            <Copy className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">-</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       {key.is_used ? (
