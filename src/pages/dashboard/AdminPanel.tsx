@@ -12,10 +12,17 @@ import { toast } from 'sonner';
 import { Plus, Trash2, Key, Shield, Loader2, Copy, CheckCircle2, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 
+interface CreatedCredential {
+  keyCode: string;
+  password: string;
+}
+
 export default function AdminPanel() {
   const { loading, keys, fetchCredentialKeys, createCredentialKey, deleteCredentialKey } = useAdmin();
   const { user } = useCredentialAuth();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
+  const [createdCredential, setCreatedCredential] = useState<CreatedCredential | null>(null);
   const [newKeyCode, setNewKeyCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [createdBy, setCreatedBy] = useState('');
@@ -37,12 +44,19 @@ export default function AdminPanel() {
     }
 
     setIsSubmitting(true);
+    const passwordToStore = newPassword; // Store password before clearing
+    const keyCodeToStore = newKeyCode.toUpperCase();
     const result = await createCredentialKey(newKeyCode, newPassword, createdBy || undefined);
     setIsSubmitting(false);
 
     if (result.success) {
-      toast.success(`Credential key ${result.keyCode} created successfully`);
+      // Show success dialog with credentials
+      setCreatedCredential({
+        keyCode: keyCodeToStore,
+        password: passwordToStore,
+      });
       setIsCreateDialogOpen(false);
+      setIsSuccessDialogOpen(true);
       setNewKeyCode('');
       setNewPassword('');
       setCreatedBy('');
@@ -187,6 +201,80 @@ export default function AdminPanel() {
                 ) : (
                   'Create Key'
                 )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Success Dialog showing created credentials */}
+        <Dialog open={isSuccessDialogOpen} onOpenChange={setIsSuccessDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-success">
+                <CheckCircle2 className="w-5 h-5" />
+                Credential Key Created
+              </DialogTitle>
+              <DialogDescription>
+                Save these credentials now. The password cannot be retrieved later.
+              </DialogDescription>
+            </DialogHeader>
+            
+            {createdCredential && (
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label>Key Code</Label>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 bg-muted px-3 py-2 rounded font-mono text-lg">
+                      {createdCredential.keyCode}
+                    </code>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => copyToClipboard(createdCredential.keyCode)}
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Password</Label>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 bg-muted px-3 py-2 rounded font-mono text-lg">
+                      {createdCredential.password}
+                    </code>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => copyToClipboard(createdCredential.password)}
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="bg-warning/10 border border-warning/30 rounded-lg p-3 mt-4">
+                  <p className="text-sm text-warning-foreground">
+                    ⚠️ Make sure to copy and save these credentials. The password will not be shown again.
+                  </p>
+                </div>
+              </div>
+            )}
+            
+            <DialogFooter>
+              <Button
+                onClick={() => {
+                  if (createdCredential) {
+                    copyToClipboard(`Key Code: ${createdCredential.keyCode}\nPassword: ${createdCredential.password}`);
+                  }
+                }}
+                variant="outline"
+              >
+                <Copy className="w-4 h-4 mr-2" />
+                Copy Both
+              </Button>
+              <Button onClick={() => setIsSuccessDialogOpen(false)}>
+                Done
               </Button>
             </DialogFooter>
           </DialogContent>
