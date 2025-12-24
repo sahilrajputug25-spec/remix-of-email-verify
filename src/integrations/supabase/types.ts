@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_logs: {
+        Row: {
+          action_type: string
+          actor_credential_key_id: string | null
+          created_at: string
+          details: Json | null
+          id: string
+          ip_address: string | null
+          target_credential_key_id: string | null
+        }
+        Insert: {
+          action_type: string
+          actor_credential_key_id?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          target_credential_key_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          actor_credential_key_id?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          target_credential_key_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_logs_actor_credential_key_id_fkey"
+            columns: ["actor_credential_key_id"]
+            isOneToOne: false
+            referencedRelation: "credential_keys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_logs_target_credential_key_id_fkey"
+            columns: ["target_credential_key_id"]
+            isOneToOne: false
+            referencedRelation: "credential_keys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bulk_uploads: {
         Row: {
           completed_at: string | null
@@ -289,6 +334,15 @@ export type Database = {
         Args: { p_key_id: string; p_session_token: string }
         Returns: Json
       }
+      get_activity_logs: {
+        Args: {
+          p_action_type?: string
+          p_limit?: number
+          p_offset?: number
+          p_session_token: string
+        }
+        Returns: Json
+      }
       get_all_credential_keys: {
         Args: { p_session_token: string }
         Returns: Json
@@ -302,6 +356,15 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { p_session_token: string }; Returns: boolean }
+      log_activity: {
+        Args: {
+          p_action_type: string
+          p_actor_credential_key_id: string
+          p_details?: Json
+          p_target_credential_key_id?: string
+        }
+        Returns: string
+      }
       save_email_validation: {
         Args: {
           p_credential_key_id: string
