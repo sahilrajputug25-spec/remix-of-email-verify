@@ -22,6 +22,8 @@ import {
   History
 } from 'lucide-react';
 
+const SESSION_TOKEN_KEY = 'credential_session_token';
+
 interface Validation {
   id: string;
   email: string;
@@ -37,43 +39,64 @@ interface Validation {
 
 export default function RecentValidations() {
   const [validations, setValidations] = useState<Validation[]>([]);
+  const [allValidations, setAllValidations] = useState<Validation[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
   const itemsPerPage = 20;
   const { user } = useCredentialAuth();
 
   useEffect(() => {
     fetchValidations();
-  }, [user, currentPage, statusFilter]);
+  }, [user]);
+
+  useEffect(() => {
+    // Apply filters
+    let filtered = allValidations;
+    
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(v => v.status === statusFilter);
+    }
+    
+    if (search) {
+      filtered = filtered.filter(v => 
+        v.email.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+    
+    setValidations(filtered);
+    setCurrentPage(1);
+  }, [allValidations, statusFilter, search]);
 
   const fetchValidations = async () => {
     if (!user) return;
 
     setLoading(true);
     try {
-      let query = supabase
-        .from('email_validations')
-        .select('*', { count: 'exact' })
-        .eq('user_id', user.credentialKeyId)
-        .order('created_at', { ascending: false });
-
-      if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
+      const sessionToken = localStorage.getItem(SESSION_TOKEN_KEY);
+      if (!sessionToken) {
+        setLoading(false);
+        return;
       }
 
-      const from = (currentPage - 1) * itemsPerPage;
-      const to = from + itemsPerPage - 1;
-      query = query.range(from, to);
-
-      const { data, error, count } = await query;
+      const { data, error } = await supabase.rpc('get_user_email_validations', {
+        p_session_token: sessionToken,
+        p_limit: 1000
+      });
 
       if (error) throw error;
 
-      setValidations(data || []);
-      setTotalCount(count || 0);
+      const result = data as unknown as {
+        success: boolean;
+        validations?: Validation[];
+        error?: string;
+      };
+
+      if (result.success && result.validations) {
+        setAllValidations(result.validations);
+        setValidations(result.validations);
+      }
     } catch (error) {
       console.error('Error fetching validations:', error);
     } finally {
@@ -81,11 +104,12 @@ export default function RecentValidations() {
     }
   };
 
-  const filteredValidations = validations.filter((v) =>
-    v.email.toLowerCase().includes(search.toLowerCase())
-  );
-
+  const totalCount = validations.length;
   const totalPages = Math.ceil(totalCount / itemsPerPage);
+  const paginatedValidations = validations.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -156,7 +180,7 @@ export default function RecentValidations() {
                 <div key={i} className="h-14 bg-muted rounded animate-pulse" />
               ))}
             </div>
-          ) : filteredValidations.length > 0 ? (
+          ) : paginatedValidations.length > 0 ? (
             <>
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -171,7 +195,7 @@ export default function RecentValidations() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredValidations.map((validation) => (
+                    {paginatedValidations.map((validation) => (
                       <tr key={validation.id} className="border-b border-border/50 hover:bg-muted/50">
                         <td className="py-3 px-4">
                           <span className="font-mono text-sm">{validation.email}</span>
