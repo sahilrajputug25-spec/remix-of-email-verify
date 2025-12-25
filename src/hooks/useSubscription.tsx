@@ -21,6 +21,8 @@ interface UseSubscriptionReturn {
   refreshSubscription: () => Promise<void>;
 }
 
+const SESSION_TOKEN_KEY = 'credential_session_token';
+
 export function useSubscription(): UseSubscriptionReturn {
   const { user } = useCredentialAuth();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -45,21 +47,33 @@ export function useSubscription(): UseSubscriptionReturn {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('credential_key_id', user.credentialKeyId)
-        .eq('is_active', true)
-        .gt('expires_at', new Date().toISOString())
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      const sessionToken = localStorage.getItem(SESSION_TOKEN_KEY);
+      if (!sessionToken) {
+        setSubscription(null);
+        setIsLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase.rpc('get_user_subscription', {
+        p_session_token: sessionToken
+      });
 
       if (error) {
         console.error('Error fetching subscription:', error);
         setSubscription(null);
       } else {
-        setSubscription(data);
+        const result = data as unknown as {
+          success: boolean;
+          is_admin?: boolean;
+          subscription?: Subscription | null;
+          error?: string;
+        };
+
+        if (result.success && result.subscription) {
+          setSubscription(result.subscription);
+        } else {
+          setSubscription(null);
+        }
       }
     } catch (error) {
       console.error('Error fetching subscription:', error);

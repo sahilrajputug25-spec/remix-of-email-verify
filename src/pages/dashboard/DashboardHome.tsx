@@ -18,17 +18,21 @@ import {
   Lock
 } from 'lucide-react';
 
+const SESSION_TOKEN_KEY = 'credential_session_token';
+
+interface ValidationItem {
+  id: string;
+  email: string;
+  status: string;
+  created_at: string;
+}
+
 interface Stats {
   totalValidations: number;
   validCount: number;
   invalidCount: number;
   riskyCount: number;
-  recentValidations: Array<{
-    id: string;
-    email: string;
-    status: string;
-    created_at: string;
-  }>;
+  recentValidations: ValidationItem[];
 }
 
 export default function DashboardHome() {
@@ -48,26 +52,39 @@ export default function DashboardHome() {
       if (!user) return;
 
       try {
-        // Fetch all validations for stats
-        const { data: validations, error } = await supabase
-          .from('email_validations')
-          .select('id, email, status, created_at')
-          .eq('user_id', user.credentialKeyId)
-          .order('created_at', { ascending: false });
+        const sessionToken = localStorage.getItem(SESSION_TOKEN_KEY);
+        if (!sessionToken) {
+          setLoading(false);
+          return;
+        }
+
+        const { data, error } = await supabase.rpc('get_user_email_validations', {
+          p_session_token: sessionToken,
+          p_limit: 1000
+        });
 
         if (error) throw error;
 
-        const validCount = validations?.filter(v => v.status === 'valid').length || 0;
-        const invalidCount = validations?.filter(v => v.status === 'invalid').length || 0;
-        const riskyCount = validations?.filter(v => v.status === 'risky').length || 0;
+        const result = data as unknown as {
+          success: boolean;
+          validations?: ValidationItem[];
+          error?: string;
+        };
 
-        setStats({
-          totalValidations: validations?.length || 0,
-          validCount,
-          invalidCount,
-          riskyCount,
-          recentValidations: validations?.slice(0, 5) || [],
-        });
+        if (result.success && result.validations) {
+          const validations = result.validations;
+          const validCount = validations.filter(v => v.status === 'valid').length;
+          const invalidCount = validations.filter(v => v.status === 'invalid').length;
+          const riskyCount = validations.filter(v => v.status === 'risky').length;
+
+          setStats({
+            totalValidations: validations.length,
+            validCount,
+            invalidCount,
+            riskyCount,
+            recentValidations: validations.slice(0, 5),
+          });
+        }
       } catch (error) {
         console.error('Error fetching stats:', error);
       } finally {

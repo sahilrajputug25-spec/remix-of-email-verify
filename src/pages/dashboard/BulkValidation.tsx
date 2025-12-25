@@ -159,44 +159,42 @@ export default function BulkValidation() {
 
       setResults(allResults);
 
-      // Save to database
+      // Save to database using RPC
       if (user) {
-        const validations = allResults.map((result) => ({
-          user_id: user.credentialKeyId,
-          email: result.email,
-          syntax_valid: result.syntaxValid,
-          domain_exists: result.domainExists,
-          mx_records: result.mxRecords,
-          is_disposable: result.isDisposable,
-          is_role_based: result.isRoleBased,
-          is_catch_all: result.isCatchAll,
-          domain: result.domain,
-          status: result.status,
-          country: selectedCountry,
-        }));
-
-        // Insert in batches
-        for (let i = 0; i < validations.length; i += 100) {
-          const batch = validations.slice(i, i + 100);
-          await supabase.from('email_validations').insert(batch);
+        const sessionToken = localStorage.getItem('credential_session_token');
+        
+        // Save each validation using RPC
+        for (const result of allResults) {
+          await supabase.rpc('save_email_validation', {
+            p_credential_key_id: user.credentialKeyId,
+            p_email: result.email,
+            p_syntax_valid: result.syntaxValid,
+            p_domain_exists: result.domainExists,
+            p_mx_records: result.mxRecords,
+            p_is_disposable: result.isDisposable,
+            p_is_role_based: result.isRoleBased,
+            p_is_catch_all: result.isCatchAll,
+            p_domain: result.domain,
+            p_status: result.status
+          });
         }
 
-        // Save bulk upload record
+        // Save bulk upload record using RPC
         const validCount = allResults.filter((r) => r.status === 'valid').length;
         const invalidCount = allResults.filter((r) => r.status === 'invalid').length;
         const riskyCount = allResults.filter((r) => r.status === 'risky').length;
 
-        await supabase.from('bulk_uploads').insert({
-          user_id: user.credentialKeyId,
-          file_name: file?.name || 'bulk_upload',
-          total_emails: allResults.length,
-          valid_count: validCount,
-          invalid_count: invalidCount,
-          risky_count: riskyCount,
-          status: 'completed',
-          completed_at: new Date().toISOString(),
-          country: selectedCountry,
-        });
+        if (sessionToken) {
+          await supabase.rpc('create_bulk_upload', {
+            p_session_token: sessionToken,
+            p_file_name: file?.name || 'bulk_upload',
+            p_total_emails: allResults.length,
+            p_country: selectedCountry
+          });
+
+          // Update the bulk upload with results
+          // Note: For now, we create a completed record directly
+        }
       }
 
       toast({

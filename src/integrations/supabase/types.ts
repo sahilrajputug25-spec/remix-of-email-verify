@@ -317,6 +317,15 @@ export type Database = {
     }
     Functions: {
       activate_subscription: { Args: { p_key_code: string }; Returns: Json }
+      create_bulk_upload: {
+        Args: {
+          p_country?: string
+          p_file_name: string
+          p_session_token: string
+          p_total_emails: number
+        }
+        Returns: Json
+      }
       create_credential_key: {
         Args: {
           p_created_by?: string
@@ -330,8 +339,16 @@ export type Database = {
         Args: { p_key_code: string; p_password: string }
         Returns: Json
       }
+      delete_bulk_upload: {
+        Args: { p_session_token: string; p_upload_id: string }
+        Returns: Json
+      }
       delete_credential_key: {
         Args: { p_key_id: string; p_session_token: string }
+        Returns: Json
+      }
+      delete_email_validation: {
+        Args: { p_session_token: string; p_validation_id: string }
         Returns: Json
       }
       get_activity_logs: {
@@ -344,6 +361,18 @@ export type Database = {
         Returns: Json
       }
       get_all_credential_keys: {
+        Args: { p_session_token: string }
+        Returns: Json
+      }
+      get_user_bulk_uploads: {
+        Args: { p_session_token: string }
+        Returns: Json
+      }
+      get_user_email_validations: {
+        Args: { p_limit?: number; p_session_token: string }
+        Returns: Json
+      }
+      get_user_subscription: {
         Args: { p_session_token: string }
         Returns: Json
       }
@@ -379,6 +408,17 @@ export type Database = {
           p_syntax_valid: boolean
         }
         Returns: string
+      }
+      update_bulk_upload: {
+        Args: {
+          p_invalid_count: number
+          p_risky_count: number
+          p_session_token: string
+          p_status?: string
+          p_upload_id: string
+          p_valid_count: number
+        }
+        Returns: Json
       }
       validate_session: { Args: { p_session_token: string }; Returns: Json }
     }

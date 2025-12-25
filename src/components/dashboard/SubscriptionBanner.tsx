@@ -1,12 +1,24 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useCredentialAuth } from '@/hooks/useCredentialAuth';
-import { Clock, AlertTriangle, CheckCircle2, Shield } from 'lucide-react';
+import { Clock, AlertTriangle, CheckCircle2, Shield, Mail } from 'lucide-react';
+
+// Admin contact email - can be configured
+const ADMIN_EMAIL = 'admin@emailverifier.com';
 
 export default function SubscriptionBanner() {
   const { isActive, isLoading, timeRemaining, expiresAt } = useSubscription();
   const { user } = useCredentialAuth();
+
+  const handleContactAdmin = () => {
+    const subject = encodeURIComponent('Subscription Renewal Request');
+    const body = encodeURIComponent(
+      `Hello,\n\nI would like to request a new credential key for email validation.\n\nMy account details:\n- Key Code: ${user?.keyCode || 'N/A'}\n- Account ID: ${user?.credentialKeyId || 'N/A'}\n\nPlease let me know the next steps.\n\nThank you.`
+    );
+    window.location.href = `mailto:${ADMIN_EMAIL}?subject=${subject}&body=${body}`;
+  };
 
   if (isLoading) {
     return null;
@@ -81,10 +93,19 @@ export default function SubscriptionBanner() {
               <Badge variant="warning" className="text-xs">Inactive</Badge>
             </div>
             <p className="text-sm text-muted-foreground">
-              Your subscription has expired. Contact your administrator for a new credential key.
+              Your subscription has expired. Contact the administrator for a new credential key.
             </p>
           </div>
         </div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleContactAdmin}
+          className="gap-2"
+        >
+          <Mail className="w-4 h-4" />
+          Contact Admin
+        </Button>
       </div>
     </Card>
   );
