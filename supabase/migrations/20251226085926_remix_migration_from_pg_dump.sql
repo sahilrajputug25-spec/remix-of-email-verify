@@ -204,6 +204,7 @@ DECLARE
   v_credential_key RECORD;
   v_session_token TEXT;
   v_subscription RECORD;
+  v_any_subscription RECORD;
   v_subscription_id UUID;
   v_expires_at TIMESTAMP WITH TIME ZONE;
   v_is_admin BOOLEAN;
@@ -251,7 +252,14 @@ BEGIN
   INSERT INTO user_sessions (session_token, credential_key_id)
   VALUES (v_session_token, v_credential_key.id);
 
-  -- Get existing active subscription for this credential key
+  -- Check for ANY existing subscription for this credential key (active or expired)
+  SELECT * INTO v_any_subscription
+  FROM subscriptions
+  WHERE credential_key_id = v_credential_key.id
+  ORDER BY created_at DESC
+  LIMIT 1;
+
+  -- Get currently active subscription
   SELECT * INTO v_subscription
   FROM subscriptions
   WHERE credential_key_id = v_credential_key.id
@@ -260,25 +268,23 @@ BEGIN
   ORDER BY created_at DESC
   LIMIT 1;
 
-  -- For non-admins, create subscription only if none exists
+  -- For non-admins
   IF NOT v_is_admin THEN
-    IF v_subscription IS NULL THEN
-      -- Calculate expiration as 24 hours from now
+    IF v_any_subscription IS NULL THEN
+      -- First time login - create new subscription (24 hours)
       v_expires_at := now() + INTERVAL '24 hours';
-      
-      -- Deactivate any expired subscriptions
-      UPDATE subscriptions
-      SET is_active = false
-      WHERE credential_key_id = v_credential_key.id
-        AND (expires_at <= now() OR is_active = false);
 
-      -- Create new subscription
       INSERT INTO subscriptions (credential_key_id, expires_at, is_active)
       VALUES (v_credential_key.id, v_expires_at, true)
       RETURNING id INTO v_subscription_id;
-    ELSE
+    ELSIF v_subscription IS NOT NULL THEN
+      -- Has active subscription - use it
       v_subscription_id := v_subscription.id;
       v_expires_at := v_subscription.expires_at;
+    ELSE
+      -- Had subscription before but it's expired - don't create new one
+      v_subscription_id := v_any_subscription.id;
+      v_expires_at := v_any_subscription.expires_at;
     END IF;
   END IF;
 
