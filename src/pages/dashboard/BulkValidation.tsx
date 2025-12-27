@@ -101,8 +101,8 @@ export default function BulkValidation() {
           .map((email) => email.trim().toLowerCase());
       }
 
-      // Remove duplicates and limit to 200000
-      const uniqueEmails = [...new Set(extractedEmails)].slice(0, 200000);
+      // Remove duplicates and limit to 20000
+      const uniqueEmails = [...new Set(extractedEmails)].slice(0, 20000);
       
       if (uniqueEmails.length === 0) {
         toast({
@@ -136,11 +136,16 @@ export default function BulkValidation() {
     setProgress(0);
 
     try {
-      const batchSize = 50;
+      // Large batch size - edge function handles parallelism internally
+      const batchSize = 1000;
       const allResults: ValidationResult[] = [];
+      const startTime = Date.now();
 
+      // Process in parallel batches for maximum speed
       for (let i = 0; i < emails.length; i += batchSize) {
         const batch = emails.slice(i, i + batchSize);
+        
+        console.log(`Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(emails.length / batchSize)} (${batch.length} emails)`);
         
         // Use edge function with real DNS lookups
         const { data, error: fnError } = await supabase.functions.invoke('validate-email', {
@@ -154,30 +159,56 @@ export default function BulkValidation() {
 
         const batchResults = data.results as ValidationResult[];
         allResults.push(...batchResults);
-        setProgress(Math.min(((i + batchSize) / emails.length) * 100, 100));
+        
+        const progressPercent = Math.min(((i + batch.length) / emails.length) * 100, 100);
+        setProgress(progressPercent);
+        
+        const elapsedSeconds = (Date.now() - startTime) / 1000;
+        const emailsPerSecond = allResults.length / elapsedSeconds;
+        console.log(`Progress: ${allResults.length}/${emails.length} (${emailsPerSecond.toFixed(1)} emails/sec)`);
       }
 
       setResults(allResults);
 
-      // Save to database using RPC
+      const totalTime = ((Date.now() - startTime) / 1000 / 60).toFixed(1);
+      console.log(`Validation complete: ${allResults.length} emails in ${totalTime} minutes`);
+
+      // Save to database using batch RPC (single call for thousands of records)
       if (user) {
         const sessionToken = localStorage.getItem('credential_session_token');
         
-        // Save each validation using RPC
-        for (const result of allResults) {
-          await supabase.rpc('save_email_validation', {
+        // Use batch save - process 5000 at a time for efficiency
+        const saveBatchSize = 5000;
+        const saveStartTime = Date.now();
+        
+        for (let i = 0; i < allResults.length; i += saveBatchSize) {
+          const saveBatch = allResults.slice(i, i + saveBatchSize);
+          const validationsJson = saveBatch.map(result => ({
+            email: result.email,
+            syntax_valid: result.syntaxValid,
+            domain_exists: result.domainExists,
+            mx_records: result.mxRecords,
+            is_disposable: result.isDisposable,
+            is_role_based: result.isRoleBased,
+            is_catch_all: result.isCatchAll,
+            domain: result.domain,
+            status: result.status
+          }));
+          
+          const { data: saveResult, error: saveError } = await supabase.rpc('batch_save_email_validations', {
             p_credential_key_id: user.credentialKeyId,
-            p_email: result.email,
-            p_syntax_valid: result.syntaxValid,
-            p_domain_exists: result.domainExists,
-            p_mx_records: result.mxRecords,
-            p_is_disposable: result.isDisposable,
-            p_is_role_based: result.isRoleBased,
-            p_is_catch_all: result.isCatchAll,
-            p_domain: result.domain,
-            p_status: result.status
+            p_validations: validationsJson
           });
+          
+          if (saveError) {
+            console.error('Batch save error:', saveError);
+          } else {
+            const insertedCount = (saveResult as { inserted_count?: number })?.inserted_count || saveBatch.length;
+            console.log(`Saved batch ${Math.floor(i / saveBatchSize) + 1}: ${insertedCount} records`);
+          }
         }
+        
+        console.log(`Database save completed in ${((Date.now() - saveStartTime) / 1000).toFixed(1)}s`);
 
         // Save bulk upload record using RPC
         const validCount = allResults.filter((r) => r.status === 'valid').length;
@@ -191,17 +222,15 @@ export default function BulkValidation() {
             p_total_emails: allResults.length,
             p_country: selectedCountry
           });
-
-          // Update the bulk upload with results
-          // Note: For now, we create a completed record directly
         }
       }
 
       toast({
         title: 'Validation Complete',
-        description: `Validated ${allResults.length} emails successfully.`,
+        description: `Validated ${allResults.length} emails in ${totalTime} minutes.`,
       });
     } catch (error) {
+      console.error('Validation error:', error);
       toast({
         title: 'Error',
         description: 'Failed to validate emails. Please try again.',
@@ -286,7 +315,7 @@ export default function BulkValidation() {
       <div>
         <h1 className="text-3xl font-bold text-foreground">Bulk Email Validation</h1>
         <p className="text-muted-foreground mt-1">
-          Upload a CSV or Excel file to validate up to 200000 emails at once.
+          Upload a CSV or Excel file to validate up to 20,000 emails at once.
         </p>
       </div>
 
@@ -336,7 +365,7 @@ export default function BulkValidation() {
                 <p className="mb-2 text-sm text-muted-foreground">
                   <span className="font-semibold text-foreground">Click to upload</span> or drag and drop
                 </p>
-                <p className="text-xs text-muted-foreground">CSV or Excel files (max 200000 emails)</p>
+                <p className="text-xs text-muted-foreground">CSV or Excel files (max 20,000 emails)</p>
               </div>
               <input
                 type="file"
