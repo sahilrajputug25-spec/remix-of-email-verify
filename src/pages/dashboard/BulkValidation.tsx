@@ -105,8 +105,8 @@ export default function BulkValidation() {
           .map((email) => email.trim().toLowerCase());
       }
 
-      // Remove duplicates and limit to 20000
-      const uniqueEmails = [...new Set(extractedEmails)].slice(0, 20000);
+      // Remove duplicates and limit to 52000
+      const uniqueEmails = [...new Set(extractedEmails)].slice(0, 52000);
       
       if (uniqueEmails.length === 0) {
         toast({
