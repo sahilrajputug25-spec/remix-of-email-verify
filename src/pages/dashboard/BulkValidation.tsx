@@ -101,8 +101,8 @@ export default function BulkValidation() {
           .map((email) => email.trim().toLowerCase());
       }
 
-      // Remove duplicates and limit to 1000
-      const uniqueEmails = [...new Set(extractedEmails)].slice(0, 1000);
+      // Remove duplicates and limit to 200000
+      const uniqueEmails = [...new Set(extractedEmails)].slice(0, 200000);
       
       if (uniqueEmails.length === 0) {
         toast({
@@ -286,7 +286,7 @@ export default function BulkValidation() {
       <div>
         <h1 className="text-3xl font-bold text-foreground">Bulk Email Validation</h1>
         <p className="text-muted-foreground mt-1">
-          Upload a CSV or Excel file to validate up to 1000 emails at once.
+          Upload a CSV or Excel file to validate up to 200000 emails at once.
         </p>
       </div>
 
@@ -336,7 +336,7 @@ export default function BulkValidation() {
                 <p className="mb-2 text-sm text-muted-foreground">
                   <span className="font-semibold text-foreground">Click to upload</span> or drag and drop
                 </p>
-                <p className="text-xs text-muted-foreground">CSV or Excel files (max 1000 emails)</p>
+                <p className="text-xs text-muted-foreground">CSV or Excel files (max 200000 emails)</p>
               </div>
               <input
                 type="file"
