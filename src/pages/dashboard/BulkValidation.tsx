@@ -319,7 +319,7 @@ export default function BulkValidation() {
       <div>
         <h1 className="text-3xl font-bold text-foreground">Bulk Email Validation</h1>
         <p className="text-muted-foreground mt-1">
-          Upload a CSV or Excel file to validate up to 20,000 emails at once.
+          Upload a CSV or Excel file to validate up to 52,000 emails at once.
         </p>
       </div>
 
@@ -383,7 +383,7 @@ export default function BulkValidation() {
                     <p className="mb-2 text-sm text-muted-foreground">
                       <span className="font-semibold text-foreground">Click to upload</span> or drag and drop
                     </p>
-                    <p className="text-xs text-muted-foreground">CSV or Excel files (max 20,000 emails)</p>
+                    <p className="text-xs text-muted-foreground">CSV or Excel files (max 52,000 emails)</p>
                   </div>
                   <input
                     type="file"
