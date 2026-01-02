@@ -67,11 +67,13 @@ export type Database = {
           file_name: string
           id: string
           invalid_count: number | null
+          invalid_csv_path : string | null
           risky_count: number | null
           status: string
           total_emails: number | null
           user_id: string
           valid_count: number | null
+          valid_csv_path: string | null
         }
         Insert: {
           completed_at?: string | null
@@ -80,11 +82,13 @@ export type Database = {
           file_name: string
           id?: string
           invalid_count?: number | null
+          invalid_csv_path?: string | null
           risky_count?: number | null
           status?: string
           total_emails?: number | null
           user_id: string
           valid_count?: number | null
+          valid_csv_path?: string | null
         }
         Update: {
           completed_at?: string | null
@@ -93,11 +97,13 @@ export type Database = {
           file_name?: string
           id?: string
           invalid_count?: number | null
+          invalid_csv_path?: string | null
           risky_count?: number | null
           status?: string
           total_emails?: number | null
           user_id?: string
           valid_count?: number | null
+           valid_csv_path?: string | null
         }
         Relationships: []
       }
@@ -364,8 +370,14 @@ export type Database = {
         Args: { p_session_token: string }
         Returns: Json
       }
+      
+      get_bulk_upload_by_id: {
+        Args: { p_session_token: string; p_upload_id: string }
+        Returns: Json
+      }
       get_user_bulk_uploads: {
-        Args: { p_session_token: string }
+        Args: {
+           p_session_token: string;}
         Returns: Json
       }
       get_user_email_validations: {
@@ -409,12 +421,38 @@ export type Database = {
         }
         Returns: string
       }
-      update_bulk_upload: {
+      update_bulk_upload:
+        | {
+            Args: {
+              p_invalid_count: number
+              p_risky_count: number
+              p_session_token: string
+              p_status?: string
+              p_upload_id: string
+              p_valid_count: number
+              p_invalid_csv_path: string
+              p_valid_csv_path: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_invalid_count: number
+              p_invalid_csv_path?: string
+              p_risky_count: number
+              p_session_token: string
+              p_status?: string
+              p_upload_id: string
+              p_valid_count: number
+              p_valid_csv_path?: string
+            }
+            Returns: Json
+          }
+       update_bulk_upload_counts: {
         Args: {
           p_invalid_count: number
           p_risky_count: number
           p_session_token: string
-          p_status?: string
           p_upload_id: string
           p_valid_count: number
         }

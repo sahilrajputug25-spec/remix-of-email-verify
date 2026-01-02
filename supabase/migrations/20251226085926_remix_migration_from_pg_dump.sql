@@ -551,7 +551,9 @@ BEGIN
       'risky_count', risky_count,
       'country', country,
       'created_at', created_at,
-      'completed_at', completed_at
+      'completed_at', completed_at,
+      'invalid_csv_path_url',invalid_csv_path_url,
+      'valid_csv_path_url',valid_csv_path_url
     ) ORDER BY created_at DESC
   ) INTO v_uploads
   FROM bulk_uploads

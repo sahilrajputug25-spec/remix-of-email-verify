@@ -51,7 +51,10 @@ export default function SingleValidation() {
     try {
       // Perform validation via edge function with real DNS lookups
       const { data, error: fnError } = await supabase.functions.invoke('validate-email', {
-        body: { email }
+              body: { 
+          email,
+          credential_key_id: user?.credentialKeyId 
+        }
       });
 
       if (fnError) {
