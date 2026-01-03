@@ -178,7 +178,7 @@ useEffect(() => {
 
     try {
       // Large batch size - edge function handles parallelism internally
-      const batchSize = 1000;
+      const batchSize = import.meta.env.BATCH_SIZE
       const allResults: ValidationResult[] = [];
       const startTime = Date.now();
 
