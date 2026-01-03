@@ -15,7 +15,7 @@ import RecentValidations from "./pages/dashboard/RecentValidations";
 import ProfilePage from "./pages/dashboard/Profile";
 import AdminPanel from "./pages/dashboard/AdminPanel";
 import NotFound from "./pages/NotFound";
-import { SpeedInsights } from "@vercel/speed-insights/next"
+import { SpeedInsights } from "@vercel/speed-insights/react"
 
 const queryClient = new QueryClient();
 
