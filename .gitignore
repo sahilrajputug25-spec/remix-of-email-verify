@@ -1,4 +1,5 @@
 # Logs
+email_validations.sql
 .env
 logs
 *.log

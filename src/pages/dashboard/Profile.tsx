@@ -3,16 +3,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useCredentialAuth } from '@/hooks/useCredentialAuth';
-import { User, Key, Shield } from 'lucide-react';
+import { useEmailUsage } from '@/hooks/useEmailUsage';
+import { User, Key, Shield, Mail, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 
 export default function ProfilePage() {
   const { user, loading, refreshSession } = useCredentialAuth();
+    const { usage, fetchUsage } = useEmailUsage()
 
   // Refresh session on mount to get latest subscription status
   useEffect(() => {
     refreshSession();
-  }, [refreshSession]);
+    fetchUsage();
+  }, [refreshSession, fetchUsage]);
 
   if (loading) {
     return (
@@ -117,6 +121,19 @@ export default function ProfilePage() {
                 <span>{new Date(user.subscriptionExpiresAt).toLocaleString()}</span>
               </div>
             )}
+            {usage && !usage.isAdmin && usage.limit && (
+              <div className="flex justify-between items-center py-2">
+                <span className="text-muted-foreground flex items-center gap-2">
+                  <Mail className="w-4 h-4" />
+                  Email Usage
+                </span>
+                <div className="flex flex-col items-end gap-1">
+                  <span className="text-sm">{usage.used}/{usage.limit}</span>
+                  <Progress value={(usage.used / usage.limit) * 100} className="w-24 h-2" />
+                </div>
+              </div>
+            )}
+          
           </div>
         </CardContent>
       </Card>

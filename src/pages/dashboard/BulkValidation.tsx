@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback , useEffect} from "react";
 import { Link } from "react-router-dom";
 import {
   Card,
@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useCredentialAuth } from "@/hooks/useCredentialAuth";
+import { useEmailUsage } from '@/hooks/useEmailUsage';
 import { useSubscription } from "@/hooks/useSubscription";
 import { ValidationResult } from "@/lib/email-validator";
 import SubscriptionBanner from "@/components/dashboard/SubscriptionBanner";
@@ -35,6 +36,7 @@ import {
   Globe,
   History,
   Plus,
+  Mail
 } from "lucide-react";
 import {
   Select,
@@ -76,8 +78,11 @@ export default function BulkValidation() {
   const [activeTab, setActiveTab] = useState<string>("new");
   const { user } = useCredentialAuth();
   const { isActive, isLoading: subLoading } = useSubscription();
+    const { usage, fetchUsage, checkAndIncrement } = useEmailUsage();
   const { toast } = useToast();
-
+useEffect(() => {
+    fetchUsage();
+  }, [fetchUsage]);
   const handleFileChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const selectedFile = e.target.files?.[0];
@@ -157,6 +162,16 @@ export default function BulkValidation() {
 
   const handleValidate = async () => {
     if (emails.length === 0) return;
+        // Check email limit before validation
+    const limitCheck = await checkAndIncrement(emails.length);
+    if (!limitCheck.allowed) {
+      toast({
+        title: 'Email Limit Exceeded',
+        description: `You can only validate ${limitCheck.remaining ?? 0} more emails. Current file has ${emails.length} emails.`,
+        variant: 'destructive',
+      });
+      return;
+    }
 
     setIsValidating(true);
     setProgress(0);
@@ -453,15 +468,20 @@ export default function BulkValidation() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">
-          Bulk Email Validation
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Upload a CSV or Excel file to validate up to 52,000 emails at once.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Bulk Email Validation</h1>
+          <p className="text-muted-foreground mt-1">
+            Upload a CSV or Excel file to validate up to 20,000 emails at once.
+          </p>
+        </div>
+        {usage && !usage.isAdmin && usage.limit && (
+          <Badge variant="outline" className="gap-2 py-2 px-3">
+            <Mail className="w-4 h-4" />
+            {usage.used}/{usage.limit} emails used
+          </Badge>
+        )}
       </div>
-
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full max-w-md grid-cols-2">
@@ -520,9 +540,34 @@ export default function BulkValidation() {
             </CardHeader>
             <CardContent>
               {!file ? (
-                <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-primary/50 hover:bg-muted/50 transition-all">
+                 <label className={`flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-border rounded-xl transition-all ${
+                  !isActive || (usage && !usage.isAdmin && usage.limit !== null && usage.remaining === 0)
+                    ? 'cursor-not-allowed opacity-50'
+                    : 'cursor-pointer hover:border-primary/50 hover:bg-muted/50'
+                }`}>
                   <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    {!isActive ? (
+                       <>
+                       <Lock className="w-12 h-12 text-muted-foreground mb-3" />
+                        <p className="mb-2 text-sm text-muted-foreground">
+                          <span className="font-semibold text-foreground">Subscription Expired</span>
+                        </p>
+                        <p className="text-xs text-muted-foreground">Contact admin for renewal</p>
+                       
+                       
+                       </>
+                    ):usage && !usage.isAdmin && usage.limit !== null && usage.remaining === 0 ? (
+                      <>
+                        <Lock className="w-12 h-12 text-muted-foreground mb-3" />
+                        <p className="mb-2 text-sm text-muted-foreground">
+                          <span className="font-semibold text-foreground">Email Limit Reached</span>
+                        </p>
+                        <p className="text-xs text-muted-foreground">Contact admin for more emails</p>
+                      </>
+                    ):(
+                    <>
                     <FileSpreadsheet className="w-12 h-12 text-muted-foreground mb-3" />
+
                     <p className="mb-2 text-sm text-muted-foreground">
                       <span className="font-semibold text-foreground">
                         Click to upload
@@ -532,12 +577,15 @@ export default function BulkValidation() {
                     <p className="text-xs text-muted-foreground">
                       CSV or Excel files (max 52,000 emails)
                     </p>
+                    </>
+                    )}
                   </div>
                   <input
                     type="file"
                     className="hidden"
                     accept=".csv,.xlsx,.xls"
                     onChange={handleFileChange}
+                      disabled={!isActive || (usage && !usage.isAdmin && usage.limit !== null && usage.remaining === 0)}
                   />
                 </label>
               ) : (
@@ -578,13 +626,28 @@ export default function BulkValidation() {
                   )}
 
                   {results.length === 0 && !isValidating && (
-                    <Button
-                      onClick={handleValidate}
-                      className="w-full"
+                    <Button 
+                      onClick={handleValidate} 
+                      className="w-full" 
                       size="lg"
+                      disabled={!isActive || (usage && !usage.isAdmin && usage.limit !== null && usage.remaining === 0)}
                     >
-                      <CheckCircle2 className="w-4 h-4 mr-2" />
-                      Validate {emails.length} Emails
+                      {!isActive ? (
+                        <>
+                          <Lock className="w-4 h-4 mr-2" />
+                          Subscription Expired
+                        </>
+                      ) : usage && !usage.isAdmin && usage.limit !== null && usage.remaining === 0 ? (
+                        <>
+                          <Lock className="w-4 h-4 mr-2" />
+                          Email Limit Reached
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="w-4 h-4 mr-2" />
+                          Validate {emails.length} Emails
+                        </>
+                      )}
                     </Button>
                   )}
                 </div>

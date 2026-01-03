@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useEmailUsage } from '@/hooks/useEmailUsage';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -32,7 +33,10 @@ export default function SingleValidation() {
   const { user } = useCredentialAuth();
   const { isActive, isLoading: subLoading } = useSubscription();
   const { toast } = useToast();
-
+  const { usage, fetchUsage, checkAndIncrement } = useEmailUsage();
+ useEffect(() => {
+    fetchUsage();
+  }, [fetchUsage]);
   const handleValidate = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -45,10 +49,20 @@ export default function SingleValidation() {
       return;
     }
 
+    const limitCheck = await checkAndIncrement(1);
+    if(!limitCheck.allowed){
+      toast({
+        title :'Email Limit Reached',
+        description : limitCheck.error || 'You have reached your email validation limit.',
+        variant :'destructive'
+      });
+      return;
+    }
     setIsValidating(true);
     setResult(null);
 
     try {
+      
       // Perform validation via edge function with real DNS lookups
       const { data, error: fnError } = await supabase.functions.invoke('validate-email', {
               body: { 
@@ -158,11 +172,19 @@ export default function SingleValidation() {
   return (
     <div className="max-w-3xl mx-auto space-y-6 animate-fade-in">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Single Email Validation</h1>
-        <p className="text-muted-foreground mt-1">
-          Enter an email address to validate it instantly.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Single Email Validation</h1>
+          <p className="text-muted-foreground mt-1">
+            Enter an email address to validate it instantly.
+          </p>
+        </div>
+        {usage && !usage.isAdmin && usage.limit && (
+          <Badge variant="outline" className="gap-2 py-2 px-3">
+            <Mail className="w-4 h-4" />
+            {usage.used}/{usage.limit} emails used
+          </Badge>
+        )}
       </div>
 
       {/* Validation Form */}
@@ -185,16 +207,31 @@ export default function SingleValidation() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="h-12 text-base"
+                disabled={!isActive || (usage && !usage.isAdmin && usage.limit !== null && usage.remaining === 0)}
               />
             </div>
-            <Button type="submit" size="lg" disabled={isValidating}>
-              {isValidating ? (
-                <>
+            <Button 
+            type="submit"
+            size="lg" 
+            disabled={isValidating || !isActive ||(usage && !usage.isAdmin && usage.limit !== null && usage.remaining === 0)} >
+            {isValidating ? (
+               <>
                   <Loader2 className="w-4 h-4 animate-spin" />
                   Validating...
                 </>
-              ) : (
-                <>
+            ):!isActive ?(
+              <>
+                  <Lock className="w-4 h-4" />
+                  Subscription Expired
+                </>
+
+            ) :  usage && !usage.isAdmin && usage.limit !== null && usage.remaining === 0 ? (
+              <>
+                  <Lock className="w-4 h-4" />
+                  Limit Reached
+                </>
+            ):(
+              <>
                   <Search className="w-4 h-4" />
                   Validate
                 </>

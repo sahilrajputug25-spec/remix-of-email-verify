@@ -9,6 +9,9 @@ interface CredentialKey {
   created_by: string | null;
   created_at: string;
   used_at: string | null;
+  email_limit: number | null;
+  emails_validated: number;
+  subscription_hours: number;
 }
 
 const SESSION_TOKEN_KEY = 'credential_session_token';
@@ -50,7 +53,7 @@ export function useAdmin() {
     }
   }, []);
 
-  const createCredentialKey = useCallback(async (keyCode: string, password: string, createdBy?: string) => {
+  const createCredentialKey = useCallback(async (keyCode: string, password: string, createdBy?: string , emailLimit?: number | null , subscriptionHours ?: number) => {
     const sessionToken = getSessionToken();
     if (!sessionToken) return { success: false, error: 'Not authenticated' };
 
@@ -60,7 +63,9 @@ export function useAdmin() {
         p_session_token: sessionToken,
         p_key_code: keyCode,
         p_password: password,
-        p_created_by: createdBy || null
+        p_created_by: createdBy || null,
+        p_email_limit : emailLimit ?? null,
+        p_subscription_hours: subscriptionHours ?? 24
       });
 
       if (error) {

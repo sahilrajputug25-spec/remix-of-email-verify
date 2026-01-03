@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Plus, Trash2, Key, Shield, Loader2, Copy, CheckCircle2, XCircle, Eye, EyeOff, Activity, LogIn, UserPlus, UserMinus } from 'lucide-react';
+import { Plus, Trash2, Key, Shield, Loader2, Copy, CheckCircle2, XCircle, Eye, EyeOff, Activity, LogIn, UserPlus, UserMinus , Mail , Clock} from 'lucide-react';
 import { format } from 'date-fns';
 
 interface CreatedCredential {
@@ -37,6 +37,8 @@ export default function AdminPanel() {
   const [newKeyCode, setNewKeyCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [createdBy, setCreatedBy] = useState('');
+  const [emailLimit, setEmailLimit] = useState<string>('');
+  const [subscriptionHours, setSubscriptionHours] = useState<string>('24');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   const [visiblePasswords, setVisiblePasswords] = useState<Set<string>>(new Set());
@@ -84,6 +86,8 @@ export default function AdminPanel() {
 
     setIsSubmitting(true);
     const passwordToStore = newPassword; // Store password before clearing
+    const emailLimitValue = emailLimit ? parseInt(emailLimit, 10) : null;
+    const subscriptionHoursValue = subscriptionHours ? parseInt(subscriptionHours, 10) : 24;
     const keyCodeToStore = newKeyCode.toUpperCase();
     const result = await createCredentialKey(newKeyCode, newPassword, createdBy || undefined);
     setIsSubmitting(false);
@@ -99,6 +103,8 @@ export default function AdminPanel() {
       setNewKeyCode('');
       setNewPassword('');
       setCreatedBy('');
+      setEmailLimit('');
+      setSubscriptionHours('24');
       
       // Refresh logs if on logs tab
       if (activeTab === 'logs') {
@@ -245,6 +251,39 @@ export default function AdminPanel() {
                   value={createdBy}
                   onChange={(e) => setCreatedBy(e.target.value)}
                 />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                 <div className="space-y-2">
+                  <Label htmlFor="emailLimit" className="flex items-center gap-1">
+                    <Mail className="w-3 h-3" />
+                    Email Limit
+                  </Label>
+                  <Input
+                    id="emailLimit"
+                    type="number"
+                    placeholder="Unlimited"
+                    value={emailLimit}
+                    onChange={(e) => setEmailLimit(e.target.value)}
+                    min="1"
+                  />
+                  <p className="text-xs text-muted-foreground">Leave empty for unlimited</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="subscriptionHours" className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    Duration (hours)
+                  </Label>
+                  <Input
+                    id="subscriptionHours"
+                    type="number"
+                    placeholder="24"
+                    value={subscriptionHours}
+                    onChange={(e) => setSubscriptionHours(e.target.value)}
+                    min="1"
+                  />
+                  <p className="text-xs text-muted-foreground">Default: 24 hours</p>
+                </div>
               </div>
             </div>
             
