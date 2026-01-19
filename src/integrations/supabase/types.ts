@@ -350,16 +350,7 @@ export type Database = {
         Returns: Json;
       };
       create_credential_key:
-        | {
-            Args: {
-              p_created_by?: string;
-              p_key_code: string;
-              p_password: string;
-              p_session_token: string;
-            };
-            Returns: Json;
-          }
-        | {
+         {
             Args: {
               p_created_by?: string;
               p_email_limit?: number;

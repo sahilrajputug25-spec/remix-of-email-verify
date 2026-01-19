@@ -89,7 +89,7 @@ export default function AdminPanel() {
     const emailLimitValue = emailLimit ? parseInt(emailLimit, 10) : null;
     const subscriptionHoursValue = subscriptionHours ? parseInt(subscriptionHours, 10) : 24;
     const keyCodeToStore = newKeyCode.toUpperCase();
-    const result = await createCredentialKey(newKeyCode, newPassword, createdBy || undefined);
+    const result = await createCredentialKey(newKeyCode, newPassword, createdBy || undefined, emailLimitValue, subscriptionHoursValue);
     setIsSubmitting(false);
 
     if (result.success) {
