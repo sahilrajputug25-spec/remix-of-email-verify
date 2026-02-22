@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CredentialAuthProvider } from "@/hooks/useCredentialAuth";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
+import Pricing from "./pages/Pricing";
 
 import { DashboardLayout } from "./components/dashboard/DashboardLayout";
 import DashboardHome from "./pages/dashboard/DashboardHome";
@@ -16,6 +17,7 @@ import ProfilePage from "./pages/dashboard/Profile";
 import AdminPanel from "./pages/dashboard/AdminPanel";
 import NotFound from "./pages/NotFound";
 import { SpeedInsights } from "@vercel/speed-insights/react"
+
 
 const queryClient = new QueryClient();
 
@@ -29,9 +31,11 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/pricing" element={<Pricing />} />
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<DashboardHome />} />
               <Route path="validate" element={<SingleValidation />} />
+              
               <Route path="bulk" element={<BulkValidation />} />
               <Route path="history" element={<RecentValidations />} />
               <Route path="profile" element={<ProfilePage />} />

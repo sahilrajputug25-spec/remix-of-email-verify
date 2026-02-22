@@ -21,10 +21,13 @@ export function DashboardLayout() {
 
   return (
     <div className="min-h-screen flex w-full bg-background">
-      <DashboardSidebar />
+      {/* Sidebar - hidden on mobile, shown on lg+ */}
+      <div className="hidden lg:block">
+        <DashboardSidebar />
+      </div>
       <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
         <DashboardHeader />
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 p-4 sm:p-6 overflow-auto">
           <Outlet />
         </main>
       </div>

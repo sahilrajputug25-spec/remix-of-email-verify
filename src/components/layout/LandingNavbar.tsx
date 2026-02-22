@@ -26,6 +26,9 @@ export function LandingNavbar() {
             <Link to="/#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium">
               How it Works
             </Link>
+            <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium">
+              Pricing
+            </Link>
           </div>
 
           {/* Desktop Auth */}
@@ -44,12 +47,15 @@ export function LandingNavbar() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-border animate-fade-in">
-            <div className="flex flex-col gap-3">
-              <Link to="/#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors px-2 py-2 font-medium" onClick={() => setMobileMenuOpen(false)}>
+            <div className="flex flex-col gap-1">
+              <Link to="/#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2.5 rounded-lg hover:bg-muted font-medium" onClick={() => setMobileMenuOpen(false)}>
                 Features
               </Link>
-              <Link to="/#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors px-2 py-2 font-medium" onClick={() => setMobileMenuOpen(false)}>
+              <Link to="/#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2.5 rounded-lg hover:bg-muted font-medium" onClick={() => setMobileMenuOpen(false)}>
                 How it Works
+              </Link>
+              <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2.5 rounded-lg hover:bg-muted font-medium" onClick={() => setMobileMenuOpen(false)}>
+                Pricing
               </Link>
               <div className="pt-2 border-t border-border">
                 <Button size="sm" asChild className="w-full">
