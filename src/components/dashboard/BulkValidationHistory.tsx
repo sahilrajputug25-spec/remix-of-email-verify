@@ -62,7 +62,9 @@ export default function BulkUploadHistory() {
       const sessionToken = localStorage.getItem('credential_session_token');
       if (!sessionToken) return;
 
-      const { data, error } = await supabase.rpc('get_user_bulk_uploads', {
+      const rpcFunction = user.isAdmin ? 'get_all_bulk_uploads' : 'get_user_bulk_uploads';
+
+      const { data, error } = await supabase.rpc(rpcFunction, {
         p_session_token: sessionToken
 
       });

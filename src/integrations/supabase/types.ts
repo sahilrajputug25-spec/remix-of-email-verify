@@ -401,6 +401,10 @@ export type Database = {
         };
         Returns: Json;
       };
+       get_all_bulk_uploads: {
+        Args: { p_session_token: string }
+        Returns: Json
+      };
       get_email_usage: { Args: { p_session_token: string }; Returns: Json };
       get_user_email_validations: {
         Args: { p_limit?: number; p_session_token: string };
