@@ -7,67 +7,52 @@ export function LandingNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass border-b">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-lg bg-gradient-primary flex items-center justify-center">
-              <Mail className="w-5 h-5 text-primary-foreground" />
+          <Link to="/" className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
+              <Mail className="w-4 h-4 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold text-foreground">EmailVerify</span>
+            <span className="text-lg font-display font-bold text-foreground">EmailVerify</span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            <Link to="/#features" className="text-muted-foreground hover:text-foreground transition-colors">
+            <Link to="/#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium">
               Features
             </Link>
-            <Link to="/#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">
+            <Link to="/#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium">
               How it Works
             </Link>
           </div>
 
-          {/* Desktop Auth Buttons */}
+          {/* Desktop Auth */}
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="hero" asChild>
+            <Button size="sm" asChild>
               <Link to="/auth">Login</Link>
             </Button>
           </div>
 
           {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? (
-              <X className="w-6 h-6 text-foreground" />
-            ) : (
-              <Menu className="w-6 h-6 text-foreground" />
-            )}
+          <button className="md:hidden p-2" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+            {mobileMenuOpen ? <X className="w-5 h-5 text-foreground" /> : <Menu className="w-5 h-5 text-foreground" />}
           </button>
         </div>
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-border animate-fade-in">
-            <div className="flex flex-col gap-4">
-              <Link 
-                to="/#features" 
-                className="text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
-                onClick={() => setMobileMenuOpen(false)}
-              >
+            <div className="flex flex-col gap-3">
+              <Link to="/#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors px-2 py-2 font-medium" onClick={() => setMobileMenuOpen(false)}>
                 Features
               </Link>
-              <Link 
-                to="/#how-it-works" 
-                className="text-muted-foreground hover:text-foreground transition-colors px-2 py-2"
-                onClick={() => setMobileMenuOpen(false)}
-              >
+              <Link to="/#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors px-2 py-2 font-medium" onClick={() => setMobileMenuOpen(false)}>
                 How it Works
               </Link>
-              <div className="flex flex-col gap-2 pt-2 border-t border-border">
-                <Button variant="hero" asChild className="w-full">
+              <div className="pt-2 border-t border-border">
+                <Button size="sm" asChild className="w-full">
                   <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>Login</Link>
                 </Button>
               </div>
