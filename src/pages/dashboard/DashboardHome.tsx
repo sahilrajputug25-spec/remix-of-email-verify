@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useCredentialAuth } from '@/hooks/useCredentialAuth';
 import { useSubscription } from '@/hooks/useSubscription';
 import SubscriptionBanner from '@/components/dashboard/SubscriptionBanner';
+import ValidationAnalytics from '@/components/dashboard/ValidationAnalytics';
 import { 
   Mail, 
   FileUp, 
@@ -46,6 +47,7 @@ export default function DashboardHome() {
     recentValidations: [],
   });
   const [loading, setLoading] = useState(true);
+  const [allValidations, setAllValidations] = useState<ValidationItem[]>([]);
 
   useEffect(() => {
     async function fetchStats() {
@@ -77,6 +79,7 @@ export default function DashboardHome() {
           const invalidCount = validations.filter(v => v.status === 'invalid').length;
           const riskyCount = validations.filter(v => v.status === 'risky').length;
 
+          setAllValidations(validations);
           setStats({
             totalValidations: validations.length,
             validCount,
@@ -151,6 +154,9 @@ export default function DashboardHome() {
           loading={loading}
         />
       </div>
+
+      {/* Analytics Charts */}
+      <ValidationAnalytics validations={stats.recentValidations.length > 0 ? allValidations : []} loading={loading} />
 
       {/* Quick Actions */}
       <div className="grid md:grid-cols-2 gap-4 sm:gap-6">

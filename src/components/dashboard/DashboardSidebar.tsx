@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import {Home, Mail, FileUp, History, User, LogOut, ChevronLeft, ChevronRight, Shield} from 'lucide-react';
+import {Home, Mail, FileUp, History, User, LogOut, ChevronLeft, ChevronRight, Shield, Webhook
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useCredentialAuth } from '@/hooks/useCredentialAuth';
@@ -17,6 +18,7 @@ export function DashboardSidebar() {
       { path: '/dashboard/bulk', label: 'Bulk Validation', icon: FileUp },
       { path: '/dashboard/history', label: 'History', icon: History },
       { path: '/dashboard/profile', label: 'Profile', icon: User },
+      { path: '/dashboard/webhooks', label: 'Webhooks', icon: Webhook },
     ];
     
     // Only show Admin Panel for admin users
