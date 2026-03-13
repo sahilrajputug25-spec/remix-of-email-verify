@@ -7,6 +7,7 @@ import { CredentialAuthProvider } from "@/hooks/useCredentialAuth";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import Pricing from "./pages/Pricing";
+import WebhookSettings from "./pages/dashboard/WebhookSettings";
 
 import { DashboardLayout } from "./components/dashboard/DashboardLayout";
 import DashboardHome from "./pages/dashboard/DashboardHome";
@@ -15,6 +16,7 @@ import BulkValidation from "./pages/dashboard/BulkValidation";
 import RecentValidations from "./pages/dashboard/RecentValidations";
 import ProfilePage from "./pages/dashboard/Profile";
 import AdminPanel from "./pages/dashboard/AdminPanel";
+import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
 import { SpeedInsights } from "@vercel/speed-insights/react"
 
@@ -32,6 +34,8 @@ const App = () => (
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/privacy" element={<Privacy />} />
+            
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<DashboardHome />} />
               <Route path="validate" element={<SingleValidation />} />
@@ -39,6 +43,7 @@ const App = () => (
               <Route path="bulk" element={<BulkValidation />} />
               <Route path="history" element={<RecentValidations />} />
               <Route path="profile" element={<ProfilePage />} />
+              <Route path="webhooks" element={<WebhookSettings />} />
               <Route path="admin" element={<AdminPanel />} />
             </Route>
             <Route path="*" element={<NotFound />} />
